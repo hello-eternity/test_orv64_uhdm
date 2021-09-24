@@ -1,0 +1,755 @@
+Srdy-Drdy Interface Library
+===========================
+Guy Hutchison (ghutchis@gmail.com)
+v1.1, April 22nd, 2013
+
+Introduction
+------------
+
+The srdy-drdy library provides a common specification for unidirectional data interfaces with bidirectional flow control. The library also provides a set of common modules with compliant interfaces.
+
+Naming Conventions
+~~~~~~~~~~~~~~~~~~
+
+A 'data unit' is the amount of data transferred in a single transaction.  An 'interface' is
+a group of srdy, drdy, and one or more data signals.  An interface where srdy is an output is
+a 'producer' interface, and one where srdy is an input is a 'consumer' interface.
+
+Verification Status
+~~~~~~~~~~~~~~~~~~~
+
+Most of the components included in this library have been actively used in multiple silicon
+tapeouts, and are considered known good.  Nonetheless users of the library should validate
+proper operation of the components in their designs.  Where applicable components which are
+not known to have been used in working silicon have been flagged.
+
+The example designs provided have not been validated in silicon, and should be used only as
+an illustration of use of the SDI component library and use of the SDI in custom-written
+blocks.
+
+Methodology
+-----------
+
+The methodology of the srdy-drdy interface (SDI) is based around certain core principles for ASIC design:
+
+  * Interfaces are inherently unidirectional (no tristates)
+  * Interfaces have varying width
+  * Interfaces must support timing closure
+  * Interfaces may not have data available on every clock
+  * Destinations may not be able to accept data on every clock
+
+While not all interfaces will meet all of the above criteria, the above provides a general case which almost all interfaces can fit under.  The last two points above imply some means of flow control between the source and the destination.  Many forms of flow control are possible, which have differing advantages and disadvantages for particular types of design and data patterns.  The goal of the SDI is not to provide the "right" answer but a consistent methodology and naming which is good enough for the majority of cases without imposing an undue overhead.
+
+Signalling
+~~~~~~~~~~
+
+The SDI divides communication between two blocks into data units, where a data unit is the amount of data (width in bits) which can be transferred in a single clock.  The size of a unit is determined by the designer.  Some units may form the complete transaction between two blocks (e.g. a control token), while others may only represent part of a transaction (packet interfaces, config interfaces).
+
+A transaction is completed when both srdy and drdy are asserted on the positive edge of a clock.
+
+The blocks in the library are all specified in terms of the size of the data unit, not including the srdy/drdy control signals.  Any additional control signals needed between the source and the destination are part of the data unit (e.g. SOP/EOP).
+
+srdy
+^^^^
+
+Srdy stands for "Source Ready".  Srdy assertion should follow certain rules:
+
+  - srdy should be asserted whenever the source has data
+  - data is asserted with srdy
+  - srdy should remain asserted until the data unit is accepted
+  - data should not change until the data unit is accepted
+
+These rules exist to avoid deadlock conditions or inconsistent data.  All inter-block interfaces must follow these rules.  The first rule is important, as it implies that the source 'should not' look at the drdy signal to determine when it can send data.
+
+drdy
+^^^^
+
+Drdy stands for "Destination Ready".  Drdy assertion rules:
+
+  - drdy should be asserted whenever the destination can accept data
+  - data is latched on (srdy & drdy)
+  - drdy should remain asserted until a data unit is accepted
+
+Breaking the rules
+^^^^^^^^^^^^^^^^^^
+
+There are situations in which the assertion rules cannot be met, for example a source can talk to multiple destinations and wants to send data only to those which are ready.  The assertion rules can be broken as long as 'only one' side breaks the rules.  If both sides violate the assertion rules deadlock will occur as each waits for the other.
+
+The simplest way to resolve this is to take any area where the assertion rules cannot be met and "wrap" it with compliant interfaces.  This is done by default if designers use the timing closure interfaces, all of which meet the assertion rules.
+
+Top-Level Protocols
+^^^^^^^^^^^^^^^^^^^
+
+While SDI is a very good intra-block signalling protocol, for large chips a different top-level
+signalling protocol may be required.  If transport delays between top level blocks are large enough,
+it may be necessary to add "repeaters" (banks of flops) on the data signals to meet timing.
+
+The SD library has a pair of adapters for Delayed Flow Control (DFC), which assumes that response to
+a flow control signal will take more than one cycle.  This involves two adapters.  One is a <<dfc_sender>>,
+which is a straightforward adapter which registers the input and output signals and changes the
+signal names.
+
+The other adapter is <<dfc_receiver>>, which pairs some control logic with a small FIFO which is used to
+absorb the in-transit data in the event that the receivers' producer interface asserts flow control.
+
+The DFC adapters are described in more detail in the Closure section.
+
+Usage
+~~~~~
+
+The most common usage pattern is to use the <<sd_input>> module for all interfaces where the design block is a destination, and the <<sd_output>> for all interfaces where the design block is a source.  This provides two major benefits:
+
+  - Timing closure (all module outputs are registered)
+  - Interface consistency (all assertion rules are met)
+
+A single pipeline stage block would look as follows:
+
+----------------------------------------
+  sd_input #(.width(32)) in_hold
+    (.clk(clk),.reset(reset),
+     .c_srdy (in_srdy), .c_drdy (in_drdy), .c_data (in_data),
+     .ip_srdy (lin_srdy), .ip_drdy (lin_drdy), ip_data (lin_data));
+     
+  always @*
+    begin
+      if (lin_srdy & lout_drdy)
+        begin
+          lout_srdy = 1;
+          lin_drdy = 1;
+          lout_data = lin_data;
+        end
+      else
+        begin
+          lout_srdy = 0;
+          lin_drdy = 0;
+          lout_data = 'bx;
+        end
+    end
+     
+  sd_output #(.width(32)) out_hold
+    (.clk(clk),.reset(reset),
+     .ic_srdy (lout_srdy), .ic_drdy (lout_drdy), .ic_data (lout_data),
+     .p_srdy (out_srdy), .p_drdy (out_drdy), .
+     .c_srdy (in_srdy), .c_drdy (in_drdy), .c_data (in_data),
+     .ip_srdy (lin_srdy), .ip_drdy (lin_drdy), ip_data (lin_data));
+----------------------------------------
+
+Pipelining
+^^^^^^^^^^
+
+Building a multistage pipeline within a design block can also be simplified by
+using SDI components.  The sd_output block can also be used as an inter-stage
+timing closure element for the datapath.  This does create a potential critical
+path on the drdy signal across the block, as this signal will not be registered
+until it hits the <<sd_input>> block in the first stage, however each sd_output
+stage only adds a single gate delay to the path.
+
+Below is a sample three-stage pipeline.  The two sd_output blocks before the
+final stage are for inter-stage timing closure.
+
+--------------------------------
+
+  +----------+   +-----------+   +-----------+   +-----------+
+  | sd_input |-->| sd_output |-->| sd_output |-->| sd_output |
+  |  stage 1 |   |  stage 1  |   |  stage 2  |   |  stage 3  |
+  +----------+   +-----------+   +-----------+   +-----------+
+
+--------------------------------
+
+Pipelines may also need to incorporate elements within them which contain their
+own internal pipeline.  An example of this would be a memory with a 2-cycle latency.
+These can be incorporated by keeping a parallel chain of valid state flops, and
+then gating the clock to the entire group when the output drdy is low.  The code
+fragment below shows a sample such block.
+
+----------------------------------------
+  mem_2cycle sample_mem
+    (.clk (gated_clk), 
+     .rd_data(rd_data),
+     .rd_en  (rd_en_s0),
+     ...
+     );
+
+  always @(posedge gated_clk)
+    begin
+      rd_en_s1 <= rd_en_s0;
+      rd_en_s2 <= rd_en_s1;
+    end
+
+  assign gated_clk = clk & (!vld | drdy_s2);
+----------------------------------------
+
+Area
+^^^^
+
+As the library components are all parameterizable, the are of the blocks depends
+on the parameters they are instantiated with.  Most blocks have a width parameter,
+and for sufficiently large widths (>16-32) the area of the component is dominated
+by the number of flops.  The table below shows the approximate flop count for
+some common components.
+
+.Rough Component Flop Count
+[width="40%",options="header"]
+|=======================
+| Name       | Flop Count   
+| sd_input   |  W      
+| sd_output  |  W      
+| sd_iohalf  |  W      
+| sd_iofull  |  2*W    
+| sd_iosync  |  2*W    
+| sd_fifo_s  |  D*W    
+| sd_fifo_b  | (D+2)*W 
+|=======================
+
+W stands for width, and D for depth for the FIFO components.
+
+Timing Closure Components
+-------------------------
+
+The timing closure components are intended for designing custom blocks and pipeline
+stages.  Each block provides timing closure for block outputs, or for block inputs
+and outputs.
+
+The two most common design methodologies today are registered-output (RO) and 
+registered-input-registered-output (RIRO).  The library is generally built around
+an assumption of an RO design style but also supports RIRO.
+
+Note that the two styles are not mutually exclusive; a given project might specify that
+all blocks should use an RO style and superblocks (floorplan units) should use RIRO.
+
+For components which support synchronization across clock domains, the sync flops are
+all prefixed with hgff_ for replacement during synthesis with high-gain flip flops.
+
+[[sd_input]]
+sd_input
+~~~~~~~~
+
+When using an RO design style, the sd_input provides timing closure for a block's
+consumer interface.  The only block output for the consumer interface is c_drdy.
+sd_input also provides a one-word buffer on c_data, but doesn't provide timing
+closure for this input.
+
+.sd_input Parameter description
+[options="header",cols="3,3,10"]
+|=============
+| Name | Valid range | Description
+| width | 2+ | Width of the data input/output, in bits
+|=============
+
+[[sd_output]]
+sd_output
+~~~~~~~~~
+
+The sd_output is the companion block to sd_input, providing timing closure for a
+block's producer interface (or interfaces).  It provides timing closure on p_srdy
+and p_data.
+
+.sd_output Parameter description
+[options="header",cols="3,3,10"]
+|=============
+| Name | Valid range | Description
+| width | 2+ | Width of the data input/output, in bits
+|=============
+
+[[sd_iohalf]]
+sd_iohalf
+~~~~~~~~~
+
+The sd_iohalf can be used as either an input or output timing closure block, as
+it closes timing on all of its inputs and outputs.  It has an efficiency of 0.5,
+meaning it can only accept data on at most every other clock, so it is useful for
+low-rate interfaces.
+
+.sd_iohalf Parameters
+[options="header",cols="3,3,10"]
+|=============
+| Name | Valid range | Description
+| width | 2+ | Width of the data input/output, in bits
+|=============
+
+[[sd_iofull]]
+sd_iofull
+~~~~~~~~~
+
+This block can be used with a RIRO design style to provide timing closure for 
+all of a block's inputs and outputs.  Combines an sd_input and sd_output.
+This is not a "pure" registered input block but there are no more than 2-3 levels 
+of logic before the input is registered.
+
+.sd_iofull Parameters
+[options="header",cols="3,3,10"]
+|=============
+| Name | Valid range | Description
+| width | 2+ | Width of the data input/output, in bits
+|=============
+
+sd_iosync_p and sd_iosync_c
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Related pair of components for cross-clock domain communication.  Separated
+into two blocks as different clock domains are likely to be across different
+hierarchies.  Each block resides entirely in one clock domain.
+
+The consumer block resides in the sending clock domain, and provides a
+completely registered output to the receiving domain.  The incoming ack
+signal is double-synchronized.
+
+The producer block resides in the receiving clock domain, and provides a
+registered ack signal to the sending domain.  The incoming req is also
+double-synchronized, and data guarenteed to be stable by the time it is
+latched.  
+
+All s_* inputs to these blocks are false paths for timing closure.
+
+.sd_iosync Parameter description
+[options="header",cols="3,3,10"]
+|=============
+| Name | Valid range | Description
+| width | 2+ | Width of the data input/output, in bits
+|=============
+
+[[dfc_sender]]
+dfc_sender
+~~~~~~~~~~
+
+Delayed Flow Control conversion block.  Converts between srdy-drdy interface and
+valid/flow control interface.  Flow control is declared as active low so that it
+retains the same semantics as drdy (transmit on high).
+
+The DFC sender block is quite simple, and effectively is a stripped-down sd_output
+block which renames the two signals.  The DFC sender should be used in place of
+an <<sd_output>> or <<sd_iofull>> block.
+
+NOTE:  If being used to replace an sd_iofull block, the p_fc_n signal is not
+       registered by the module and should be registered by the designer.
+
+.dfc_sender Parameters
+[options="header",cols="3,3,10"]
+|=============
+| Name | Valid range | Description
+| width | 2+ | Width of the data input/output, in bits
+|=============
+
+[[dfc_receiver]]
+dfc_receiver
+~~~~~~~~~~~~
+
+Delayed Flow Control conversion block.  Converts between srdy-drdy interface and
+valid/flow control interface.  Flow control is declared as active low so that it
+retains the same semantics as drdy (transmit on high).
+
+The DFC Receiver block is the companion block to the DFC sender block above.
+It converts back between a valid/flow control interface and an srdy-drdy 
+interface.  In this function it replaces an <<sd_input>> or <<sd_iofull>> block.
+
+NOTE:  If being used to replace an sd_iofull block, the c_fc_n signal is not
+       registered by the module and should be registered by the designer.
+
+Because multiple words could be outstanding in the pipeline, some amount of data
+may show up even after the flow control signal is asserted.  Because of this the
+dfc_receiver block integrates a small FIFO to hold the in-flight data between
+the time the flow control signal is asserted and the time data ceases to arrive.
+
+The threshold value examines the FIFO usage and decides when to assert flow
+control.  During steady-state operation (p_drdy is asserted), the FIFO usage
+should remain a constant 2 words (using <<sd_fifo_c>>), and the threshold should
+be set to one more (3), otherwise flow control will be needlessly asserted.
+
+The size of the FIFO should be set to the size of the thresold value plus the
+number of repeater flop banks added between dfc_sender and dfc_receiver.
+Note that this includes not only the flops on the valid path but those on
+the returning flow control path.
+
+NOTE:  For example, If the valid path was registered three times between sender and
+       receiver and the fc_n signal registered once, then the FIFO size
+       should be 3 + 1 + 3 = 7
+
+.dfc_receiver Parameters
+[options="header",cols="3,5,10"]
+|===========================================================================
+| Name      | Valid range          | Description
+| width     | 2+                   | Width of the data input/output, in bits
+| depth     | RT delay + threshold | Depth of the overflow fifo, in words
+| threshold | 3+                   | Threshold at which to assert FC 
+|===========================================================================
+
+dfc_receiver_ctl
+^^^^^^^^^^^^^^^^
+
+In some cases a module may already contain a FIFO at its input; in this case it 
+would be inefficient to put a 2nd FIFO immediately in front of it.  For modules
+which already contain an input FIFO, the dfc_receiver_ctl module contains only
+the control logic and expects the input usage from an srdy-drdy FIFO.
+
+The dfc_receiver_ctl takes the same parameters as dfc_receiver, but its FIFO-side
+interface signals all begin with f_.
+
+NOTE:  If the FIFO is shared with functional logic it must be sized for both the
+       logic needs and flow control requirements.  The flow control requirement
+       is logic steady state + round trip delay as above.
+
+Buffers
+-------
+
+The buffers section of the library contains FIFOs for rate-matching and storage.
+Each buffer consists of a "head" (write) block, and a "tail" (read) block, so that
+the user can construct their own FIFOs from the blocks provided without having to
+modify the library code.  Each buffer is built around a synthesizable memory-like
+block, so the buffers can be synthesized as-is or the top-level blocks can be
+used as a template for creating your own FIFO around a library-specific memory.
+
+ECC generate/correct blocks can also be placed inside this wrapper if error
+correction is needed (see https://sourceforge.net/projects/xtgenerate/ for ECC
+generator/checker).
+
+[[sd_fifo_s]]
+sd_fifo_s
+~~~~~~~~~
+
+This "small" (or "sync") FIFO is used for rate-matching between blocks.  It also 
+has built-in grey code conversion, so it can be used for crossing clock domains.  
+When the "async" parameter is set, the FIFO switches to using grey code pointers, 
+and instantiates double-sync flops between the head and tail blocks.
+
+sd_fifo_s can only be used in natural powers of 2, due to the async support. 
+
+.sd_fifo_s Parameter description
+[options="header",cols="3,3,10"]
+|=============
+| Name | Valid range | Description
+| width | 2+ | Width of the data input/output, in bits
+| depth | 4+ | Depth of the FIFO.  Must be a natural power of 2.
+| async | 0/1| When set to 1, FIFO supports asynchronous behavior with separate read and write clocks.
+|=============
+
+sync operation
+^^^^^^^^^^^^^^
+
+When the core is used as a synchronous core, the two input clock and input reset
+signals should be tied to the same clock and reset, respectively.  The two usage
+counters will read the same value; the user should use one usage counter and leave
+the other counter disconnected.
+
+async support
+^^^^^^^^^^^^^
+
+The sd_fifo_head_s and sd_fifo_tail_s have separate usage counters available.
+Each usage counter is specific to the clock domain it operates in.  If the core
+is in async mode, the two usage counters may display different values during
+operation due to the cycle delay of pointers crossing the clock domain.
+
+sd_fifo_head_s
+^^^^^^^^^^^^^^
+
+This sub-block is the head (write) half of the FIFO.  It controls pointers only and
+does not have a data input; data should be written directly to the memory.
+
+sd_fifo_tail_s
+^^^^^^^^^^^^^^
+
+This sub-block is the tail (read) half of the FIFO.  It controls pointers only and
+does not have a data input; FIFO output data comes directly from the memory.  The
+tail block assumes memory has a single cycle of read latency.
+
+sd_fifo_b
+~~~~~~~~~
+
+This "big" FIFO supports non-power-of-2 sizes, as well as abort/commit behavior on
+both of its interfaces.  It is intended for packet FIFOs where the writer may want
+to "forget" about a partially-written packet when an error is detected.  It is also
+useful for blocks which want to read ahead in the FIFO without actually removing data
+(p_abort rewinds the read pointer), or for retransmission.
+
+The FIFO controllers are built around an assumed read latency of 1 clock cycle.
+
+.sd_fifo_b Parameter description
+[options="header",cols="3,3,10"]
+|=============
+| Name | Valid range | Description
+| width | 2+ | Width of the data input/output, in bits
+| depth | 4+ | Depth of the FIFO, in words
+| rd_commit | 0/1 | 1=Enable read-commit behavior
+| wr_commit | 0/1 | 1=Enable write-commit behavior
+|=============
+
+read-commit operation
+^^^^^^^^^^^^^^^^^^^^^
+
+Read-Commit operation allows the FIFO to operate in a mode where it can roll back
+the read pointer to the last time it was committed.  This can enable behavior such
+as retransmission, where data is read from the FIFO but committed only when it has
+been successfully transmitted.
+
+p_commit can be asserted at any time; any data which has been sent from the FIFO is
+committed.  p_abort rolls back the pointer to the previous save pointer; the FIFO
+will deassert p_srdy for at least 2 cycles while it refills its pipeline.
+
+write-commit operation
+^^^^^^^^^^^^^^^^^^^^^^
+
+Write-Commit allows the FIFO to roll back the write pointer to the last time it was
+committed.  This enables the FIFO to create atomic behavior where multiple words
+are committed and become visible to the read side at once.
+
+c_commit can be asserted with a valid data word, if so the current word is also committed.
+c_commit can also be asserted when c_srdy is deasserted.  If asserted with c_srdy,
+c_commit must be held until c_drdy acknowledges the transaction.
+
+c_abort should be asserted when c_srdy is deasserted, at which point the write pointer 
+will revert to its last saved value.
+
+[[sd_fifo_c]]
+sd_fifo_c
+~~~~~~~~~
+
+The sd_fifo_c ("compact" or "count") FIFO is a synchronous-only FIFO for small,
+non-power-of-two FIFOs.  It maintains an internal up-down counter that it uses for
+empty/full detection.  The sd_fifo_c does not have separate head/tail blocks, as it 
+intended to be used as a flop-only FIFO.
+
+Other than the above it is functionally identical to the <<sd_fifo_s>>.
+
+.sd_fifo_s Parameter description
+[options="header",cols="3,3,10"]
+|=============
+| Name | Valid range | Description
+| width | 2+ | Width of the data input/output, in bits
+| depth | 2+ | Depth of the FIFO.  Can be any integer value.
+|=============
+
+FIFO Sharing
+^^^^^^^^^^^^
+
+The sd_fifo_head_b and sd_fifo_tail_b modules both have an enable signal which allows
+them to share a memory.  This enables several sharing options:
+
+  - A single head/tail pair can share a single port memory
+  - Multiple head/tail pairs can share a single or dual port memory
+
+Using multiple head/tail pairs to share a memory is done by a combination of the enable
+signals (to control which module accesses memory on a given cycle) and by the bound_high
+and bound_low inputs.
+
+To share a physical memory with multiple FIFOs, the memory must be statically partitioned
+between the different controllers, and each controller assigned a range.  The head and
+tail modules for each FIFO must have the same range.  The total range may be set to less
+than the physical size of the memory, but none of the ranges assigned may overlap.
+
+It is the responsibility of the implementer to create an appropriate scheduling for
+the enables to the different controllers and to multiplex the memory address bus
+between the controllers.  The mem_rd_data may be connected to all tail controllers,
+as they will keep track of read requests and latch the data appropriately.
+
+Forks and Joins
+---------------
+
+This section provides pipeline fork (split) and join blocks.  A fork refers to any
+block which has multiple producer interfaces, with usually a single consumer
+interface.  A join is the corresponding block with multiple consumer interfaces and
+a single producer interface.
+
+sd_mirror
+~~~~~~~~~
+
+This block is used to implement a mirrored fork, i.e. one in which all producer
+interfaces carry the same data.  This is useful in control pipelines when a single
+item of data needs to go to multiple blocks, which may all acknowledge at different
+times.
+
+It has an optional c_dst_vld input, which can be used to "steer" data to one or more
+destinations, instead of all of them.  c_dst_vld should be asserted with c_srdy, if
+it is being used.  If not used, tie this input to 0 and it will mirror to all 
+outputs.
+
+Note that sd_mirror is low-throughput, as it waits until all downstream blocks have
+acknoweldged before accepting another word.
+
+.sd_mirror Parameter description
+[options="header",cols="3,3,10"]
+|=============
+| Name | Valid range | Description
+| width | 2+ | Width of the data input/output, in bits
+| mirror | 2+ | Number of output interfaces
+|=============
+
+sd_rrmux
+~~~~~~~~
+
+This block implements a round-robin arbiter/mux.  It has multiple modes
+with options on whether a grant implies that input will "hold" the grant, or
+whether it moves on.
+
+Mode 0 multiplexes between single words of data.  Mode 1 allows an interface to burst,
+so once the interface begins transmitting it can transmit until it deasserts srdy.
+
+Mode 2 is for multiplexing data where multiple words need to be
+kept together.  Once srdy is asserted, the block will not switch inputs until the
+end pattern is seen, even if srdy is deasserted.
+
+Also has a slow (1 cycle per input) and fast (immediate) arb mode.  The fast arb mode
+violates the drdy assertion rules, as it monitors the incoming srdy signals and then
+grants a drdy to one of the input interfaces.
+
+.sd_rrmux Parameter description
+[options="header",cols="3,3,10"]
+|=============
+| Name     | Valid range | Description
+| width    | 2+ | Width of the data output, in bits
+| mirror   | 2+ | Number of input interfaces
+| mode     | 0-2 | Number of output destinations
+| fast_arb | 0/1 | Enable fast arbitration
+|=============
+
+NOTE:  modes 1 and 2 have not been verified to date.
+
+Utility
+-------
+
+This is intended for blocks which do not fit into one of the above categories.  
+Utility blocks could be items like a switch fabric, packet ring, or a scoreboard.
+
+sd_ring_node
+~~~~~~~~~~~~
+
+NOTE: This component is not silicon proven.
+
+This is a building block for a unidirectional ring.  Data is placed on the ring
+using the consumer interface and is removed on the producer interface.  sd_ring_node
+supports only point-to-point single-transaction processing (single transaction meaning
+that subsequent requests from the same source are treated as independent, and other
+requests from other nodes may be interleaved at the destination).
+
+.sd_ring_node Parameter description
+[options="header",cols="3,3,10"]
+|=============
+| Name       | Valid range | Description
+| data_width | 2+ | Width of the data output, in bits
+| addr_width | 2+ | Size of the ring address space
+| my_addr    | 0-(2^n^-1) | Address of this ring node
+|=============
+
+
+sd_scoreboard
+~~~~~~~~~~~~~
+
+This implements a "scoreboard", or centralized repository of information about a number
+of items.  The scoreboard has a single consumer and producer interface.  The user
+is expected to use a pipeline join block (such as sd_rrslow) to serialize requests.
+
+The scoreboard has a transaction id that it carries with each read request that can be
+used to steer the results back to the requestor.  For example, the "p_grant" output from
+rrslow can be connected to the c_txid input, and the p_txid output can be connected to
+the c_dst_vld input of sd_mirror, giving multi-read/multi-write capability.
+
+The scoreboard supports both read and write, where write can also use a mask to implement
+partial updates.  If the mask is set to anything other than all 1's, the scoreboard performs
+a read-modify-write to change only the unmasked portion of the data.
+
+.sd_scoreboard Parameter description
+[options="header",cols="3,3,10"]
+|=============
+| Name       | Valid range | Description
+| width      | 2+ | Width of the data input/output, in bits
+| items      | 4+ | Number of items (depth) in the scoreboard
+| use_txid   | 0/1 | Enable use of the txid input
+| use_mask   | 0/1 | Enable masked (read-modify-write) writes.  If 0, mask input will be ignored.
+| txid_sz    | 1+  | Size of the txid data
+|=============
+
+llmanager
+~~~~~~~~~
+
+WARNING: This component is under development and is not silicon-proven.
+
+This component implements a linked-list manager for implementing multiple FIFOs using a 
+linked list and a common memory pool.
+
+.llmanager Parameter description
+[options="header",cols="3,3,10"]
+|=============
+| Name      | Valid range | Description
+| lpsz      | 2+ | link list page size, in bits
+| lpdsz     | 3+ | link page data size, must be at least size of address
+| pages     | 4+ | number of pages
+| sources   | 2+ |number of sources
+| sinks     | 2+ |number of sinks
+| sksz      | log2(sinks) |number of sink address bits
+| maxref    | 0+ | maximum reference count, disable with maxref = 0
+| refsz     | 2+ | size of reference count bits
+|=============
+
+sd2vc
+~~~~~
+
+WARNING: This component is under development and is not silicon-proven.
+
+This component converts between the srdy-drdy signalling protocol and a valid-credit
+protocol.  Under a valid-credit protocol the transmitter may transmit as many data
+words as it has credit available.  Credits are returned using the _cr interface.
+
+This interface has the potential advantage of having better timing but at a cost of
+increased buffering on the receiver side.
+
+.llmanager Parameter description
+[options="header",cols="3,3,10"]
+|=============
+| Name       | Valid range | Description
+| width      | 2+  | Width of data bus, in bits
+| reginp     | 0/1 | If 1, all block inputs are also registered
+| cc_sz      | 2+  | Size of credit counter.  Number of credits is 2**cc_sz
+|=============
+
+vc2sd
+~~~~~
+
+WARNING: This component is under development and is not silicon-proven.
+
+This component converts back between a valid-credit interface to an
+srdy-drdy interface.  Contains a small FIFO internally to prevent
+overrun.  On startup vc2sd issues credits based on the size of its
+internal FIFO.
+
+At present this block does not have a credit recovery mechanism.
+
+.llmanager Parameter description
+[options="header",cols="3,3,10"]
+|=============
+| Name       | Valid range | Description
+| width      | 2+  | Width of data bus, in bits
+| depth      | 2+  | Depth of internal FIFO
+| asz        | log2(depth) | Address size of FIFO
+| reginp     | 0/1 | If 1, all block inputs are also registered
+|=============
+
+Memory
+------
+
+Contains synthesizable memories implemented as flops.  These correspond to the
+commonly used registered-output memories available in most technologies.
+
+behave1p_mem
+~~~~~~~~~~~~
+
+Single (1RW) port behavioral memory model with a synchronous read port.
+
+.behave1p_mem Parameter description
+[options="header",cols="3,3,10"]
+|=============
+| Name      | Valid range | Description
+| width     | 2+ | Memory input/output width, in bits
+| depth     | 4+ | Memory depth
+|=============
+
+behave2p_mem
+~~~~~~~~~~~~
+
+Dual (1R-1W) port behavioral memory model with a synchronous read port.
+
+.behave2p_mem Parameter description
+[options="header",cols="3,3,10"]
+|=============
+| Name      | Valid range | Description
+| width     | 2+ | Memory input/output width, in bits
+| depth     | 4+ | Memory depth
+|=============
+

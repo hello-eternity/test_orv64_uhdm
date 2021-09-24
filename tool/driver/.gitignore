@@ -1,0 +1,10 @@
+vivado*
+*.swo
+*.swp
+.nfs*
+*.log
+*.dump
+*.o
+.Xil
+ftd2xx/*
+*.pyc

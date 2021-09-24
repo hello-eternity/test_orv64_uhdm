@@ -1,0 +1,222 @@
+Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version     : Vivado v.2018.3 (lin64) Build 2405991 Thu Dec  6 23:36:41 MST 2018
+| Date             : Mon Sep 13 00:36:32 2021
+| Host             : rios-cad1 running 64-bit unknown
+| Command          : report_power -file pygmy_es1y_fpga_vcu118_power_routed.rpt -pb pygmy_es1y_fpga_vcu118_power_summary_routed.pb -rpx pygmy_es1y_fpga_vcu118_power_routed.rpx
+| Design           : pygmy_es1y_fpga_vcu118
+| Device           : xcvu9p-flga2104-2L-e
+| Design State     : routed
+| Grade            : extended
+| Process          : typical
+| Characterization : Production
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Power Report
+
+Table of Contents
+-----------------
+1. Summary
+1.1 On-Chip Components
+1.2 Power Supply Summary
+1.3 Confidence Level
+2. Settings
+2.1 Environment
+2.2 Clock Constraints
+3. Detailed Reports
+3.1 By Hierarchy
+
+1. Summary
+----------
+
++--------------------------+--------------+
+| Total On-Chip Power (W)  | 5.231        |
+| Design Power Budget (W)  | Unspecified* |
+| Power Budget Margin (W)  | NA           |
+| Dynamic (W)              | 2.720        |
+| Device Static (W)        | 2.511        |
+| Effective TJA (C/W)      | 0.5          |
+| Max Ambient (C)          | 97.2         |
+| Junction Temperature (C) | 27.8         |
+| Confidence Level         | Low          |
+| Setting File             | ---          |
+| Simulation Activity File | ---          |
+| Design Nets Matched      | NA           |
++--------------------------+--------------+
+* Specify Design Power Budget using, set_operating_conditions -design_power_budget <value in Watts>
+
+
+1.1 On-Chip Components
+----------------------
+
++--------------------------+-----------+----------+-----------+-----------------+
+| On-Chip                  | Power (W) | Used     | Available | Utilization (%) |
++--------------------------+-----------+----------+-----------+-----------------+
+| Clocks                   |     0.243 |       14 |       --- |             --- |
+| CLB Logic                |     0.143 |   684732 |       --- |             --- |
+|   LUT as Logic           |     0.097 |   336280 |   1182240 |           28.44 |
+|   LUT as Distributed RAM |     0.037 |     3328 |    591840 |            0.56 |
+|   Register               |     0.003 |   235165 |   2364480 |            9.95 |
+|   LUT as Shift Register  |     0.003 |     3408 |    591840 |            0.58 |
+|   CARRY8                 |     0.003 |    12745 |    147780 |            8.62 |
+|   Others                 |    <0.001 |     7342 |       --- |             --- |
+|   BUFG                   |     0.000 |        9 |       240 |            3.75 |
+|   F7/F8 Muxes            |     0.000 |    10674 |   1182240 |            0.90 |
+| Signals                  |     0.154 |   617183 |       --- |             --- |
+| Block RAM                |     0.029 |    219.5 |      2160 |           10.16 |
+| MMCM                     |     0.115 |        0 |       --- |             --- |
+| PLL                      |     0.178 |        3 |       --- |             --- |
+| DSPs                     |     1.162 |      403 |      6840 |            5.89 |
+| I/O                      |     0.695 |      183 |       832 |           22.00 |
+| Static Power             |     2.511 |          |           |                 |
+| Total                    |     5.231 |          |           |                 |
++--------------------------+-----------+----------+-----------+-----------------+
+
+
+1.2 Power Supply Summary
+------------------------
+
++------------+-------------+-----------+-------------+------------+
+| Source     | Voltage (V) | Total (A) | Dynamic (A) | Static (A) |
++------------+-------------+-----------+-------------+------------+
+| Vccint     |       0.850 |     2.906 |       2.046 |      0.861 |
+| Vccint_io  |       0.850 |     0.626 |       0.362 |      0.264 |
+| Vccbram    |       0.850 |     0.017 |       0.001 |      0.016 |
+| Vccaux     |       1.800 |     0.806 |       0.158 |      0.647 |
+| Vccaux_io  |       1.800 |     0.343 |       0.159 |      0.185 |
+| Vcco33     |       3.300 |     0.000 |       0.000 |      0.000 |
+| Vcco25     |       2.500 |     0.000 |       0.000 |      0.000 |
+| Vcco18     |       1.800 |     0.000 |       0.000 |      0.000 |
+| Vcco15     |       1.500 |     0.000 |       0.000 |      0.000 |
+| Vcco135    |       1.350 |     0.000 |       0.000 |      0.000 |
+| Vcco12     |       1.200 |     0.085 |       0.085 |      0.000 |
+| Vcco10     |       1.000 |     0.000 |       0.000 |      0.000 |
+| Vccadc     |       1.800 |     0.024 |       0.000 |      0.024 |
+| MGTYAVcc   |       0.900 |     0.000 |       0.000 |      0.000 |
+| MGTYAVtt   |       1.200 |     0.000 |       0.000 |      0.000 |
+| MGTYVccaux |       1.800 |     0.000 |       0.000 |      0.000 |
++------------+-------------+-----------+-------------+------------+
+
+
+1.3 Confidence Level
+--------------------
+
++-----------------------------+------------+--------------------------------------------------------+------------------------------------------------------------------------------------------------------------+
+| User Input Data             | Confidence | Details                                                | Action                                                                                                     |
++-----------------------------+------------+--------------------------------------------------------+------------------------------------------------------------------------------------------------------------+
+| Design implementation state | High       | Design is routed                                       |                                                                                                            |
+| Clock nodes activity        | High       | User specified more than 95% of clocks                 |                                                                                                            |
+| I/O nodes activity          | Low        | More than 75% of inputs are missing user specification | Provide missing input activity with simulation results or by editing the "By Resource Type -> I/Os" view   |
+| Internal nodes activity     | Medium     | User specified less than 25% of internal nodes         | Provide missing internal nodes activity with simulation results or by editing the "By Resource Type" views |
+| Device models               | High       | Device models are Production                           |                                                                                                            |
+|                             |            |                                                        |                                                                                                            |
+| Overall confidence level    | Low        |                                                        |                                                                                                            |
++-----------------------------+------------+--------------------------------------------------------+------------------------------------------------------------------------------------------------------------+
+
+
+2. Settings
+-----------
+
+2.1 Environment
+---------------
+
++-----------------------+--------------------------+
+| Ambient Temp (C)      | 25.0                     |
+| ThetaJA (C/W)         | 0.5                      |
+| Airflow (LFM)         | 250                      |
+| Heat Sink             | medium (Medium Profile)  |
+| ThetaSA (C/W)         | 0.7                      |
+| Board Selection       | medium (10"x10")         |
+| # of Board Layers     | 12to15 (12 to 15 Layers) |
+| Board Temperature (C) | 25.0                     |
++-----------------------+--------------------------+
+
+
+2.2 Clock Constraints
+---------------------
+
++-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------+
+| Clock                                                                                               | Domain                                                                                                                                                                                                           | Constraint (ns) |
++-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------+
+| c0_sys_clk_p                                                                                        | c0_sys_clk_p                                                                                                                                                                                                     |             4.0 |
+| dbg_hub/inst/BSCANID.u_xsdbm_id/SWITCH_N_EXT_BSCAN.bscan_inst/SERIES7_BSCAN.bscan_inst/INTERNAL_TCK | dbg_hub/inst/BSCANID.u_xsdbm_id/SWITCH_N_EXT_BSCAN.bscan_inst/in0                                                                                                                                                |            50.0 |
+| mmcm_clkout0                                                                                        | xilinx_ddr_u/ddr4_0_u/inst/u_ddr4_infrastructure/mmcm_clkout0                                                                                                                                                    |             3.3 |
+| mmcm_clkout1                                                                                        | xilinx_ddr_u/ddr4_0_u/inst/u_ddr4_infrastructure/mmcm_clkout1                                                                                                                                                    |            83.3 |
+| mmcm_clkout5                                                                                        | xilinx_ddr_u/ddr4_0_u/inst/u_ddr4_infrastructure/mmcm_clkout5                                                                                                                                                    |            13.3 |
+| mmcm_clkout6                                                                                        | xilinx_ddr_u/ddr4_0_u/inst/u_ddr4_infrastructure/mmcm_clkout6                                                                                                                                                    |             6.7 |
+| pll_clk[0]                                                                                          | xilinx_ddr_u/ddr4_0_u/inst/u_ddr4_mem_intfc/u_mig_ddr4_phy/inst/u_ddr4_phy_pll/pll_clk[0]                                                                                                                        |             0.4 |
+| pll_clk[0]_DIV                                                                                      | xilinx_ddr_u/ddr4_0_u/inst/u_ddr4_mem_intfc/u_mig_ddr4_phy/inst/generate_block1.u_ddr_xiphy/byte_num[0].xiphy_byte_wrapper.u_xiphy_byte_wrapper/I_CONTROL[0].GEN_I_CONTROL.u_xiphy_control/TX_BIT_CTRL_OUT0[26]  |             3.3 |
+| pll_clk[1]                                                                                          | xilinx_ddr_u/ddr4_0_u/inst/u_ddr4_mem_intfc/u_mig_ddr4_phy/inst/u_ddr4_phy_pll/pll_clk[1]                                                                                                                        |             0.4 |
+| pll_clk[1]_DIV                                                                                      | xilinx_ddr_u/ddr4_0_u/inst/u_ddr4_mem_intfc/u_mig_ddr4_phy/inst/generate_block1.u_ddr_xiphy/byte_num[4].xiphy_byte_wrapper.u_xiphy_byte_wrapper/I_CONTROL[0].GEN_I_CONTROL.u_xiphy_control/TX_BIT_CTRL_OUT0[26]  |             3.3 |
+| pll_clk[2]                                                                                          | xilinx_ddr_u/ddr4_0_u/inst/u_ddr4_mem_intfc/u_mig_ddr4_phy/inst/u_ddr4_phy_pll/pll_clk[2]                                                                                                                        |             0.4 |
+| pll_clk[2]_DIV                                                                                      | xilinx_ddr_u/ddr4_0_u/inst/u_ddr4_mem_intfc/u_mig_ddr4_phy/inst/generate_block1.u_ddr_xiphy/byte_num[10].xiphy_byte_wrapper.u_xiphy_byte_wrapper/I_CONTROL[0].GEN_I_CONTROL.u_xiphy_control/TX_BIT_CTRL_OUT0[26] |             3.3 |
++-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------+
+
+
+3. Detailed Reports
+-------------------
+
+3.1 By Hierarchy
+----------------
+
++--------------------------------------------------------+-----------+
+| Name                                                   | Power (W) |
++--------------------------------------------------------+-----------+
+| pygmy_es1y_fpga_vcu118                                 |     2.720 |
+|   dbg_hub                                              |     0.003 |
+|     inst                                               |     0.003 |
+|       BSCANID.u_xsdbm_id                               |     0.003 |
+|   jtag_wrapper_u                                       |     0.013 |
+|     jtag_i                                             |     0.013 |
+|       axi_smc                                          |     0.006 |
+|       jtag_axi_0                                       |     0.007 |
+|   soc_top_u                                            |     1.390 |
+|     bank0_station_u                                    |     0.001 |
+|     bank0_u                                            |     0.005 |
+|       MSHR                                             |     0.001 |
+|     bank1_u                                            |     0.004 |
+|       MSHR                                             |     0.001 |
+|     bank2_station_u                                    |     0.001 |
+|     bank2_u                                            |     0.005 |
+|       MSHR                                             |     0.001 |
+|     bank3_u                                            |     0.005 |
+|       MSHR                                             |     0.001 |
+|     cpu_noc_u                                          |     0.012 |
+|       amo_store_noc                                    |     0.003 |
+|     dma_station_u                                      |     0.006 |
+|       station_u                                        |     0.003 |
+|     dma_u                                              |     0.002 |
+|     mem_noc_u                                          |     0.006 |
+|       REQ_NUM_SLAVES_EQ_1.aw_w_u                       |     0.001 |
+|       RSP_NUM_MASTERS_GT_1.RSP_NUM_MASTERS_LOOP[0].r_u |     0.001 |
+|     pll_station_u                                      |     0.002 |
+|       station_u                                        |     0.002 |
+|     sdio_station_u                                     |     0.001 |
+|     usb_station_u                                      |     0.002 |
+|       station_u                                        |     0.002 |
+|     vp0_station_u                                      |     0.003 |
+|       station_u                                        |     0.003 |
+|     vp0_u                                              |     0.330 |
+|       _uP_core                                         |     0.330 |
+|     vp1_station_u                                      |     0.003 |
+|       station_u                                        |     0.002 |
+|     vp1_u                                              |     0.324 |
+|       _uP_core                                         |     0.324 |
+|     vp2_station_u                                      |     0.003 |
+|       station_u                                        |     0.003 |
+|     vp2_u                                              |     0.331 |
+|       _uP_core                                         |     0.331 |
+|     vp3_station_u                                      |     0.003 |
+|       station_u                                        |     0.003 |
+|     vp3_u                                              |     0.336 |
+|       _uP_core                                         |     0.336 |
+|   xilinx_ddr_u                                         |     1.301 |
+|     ddr4_0_u                                           |     1.277 |
+|       inst                                             |     1.277 |
+|     r_buf_u                                            |     0.002 |
+|       DEPTH_GT_0.fifo_u                                |     0.002 |
+|     xddr_cdc_u                                         |     0.021 |
+|       inst                                             |     0.021 |
++--------------------------------------------------------+-----------+
+
+

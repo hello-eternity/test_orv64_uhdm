@@ -1,0 +1,102 @@
+// Copyright 2021 RISC-V International Open Source Laboratory (RIOS Lab). All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+`include ../common/common_pkg_vpp.vh
+`include ./orv_param_pkg_vpp.vh
+
+
+package orv64_param_pkg;
+  import l2cache_vls_cfg@@*;
+
+  parameter ICACHE_SIZE_KBYTE = `ICACHE_SIZE_KBYTE;
+
+  parameter N_ICACHE_WAY = `N_ICACHE_WAY;
+
+  parameter N_ICACHE_PREFETCH = `N_ICACHE_PREFETCH;
+
+  // calculated parameters
+  parameter N_ICACHE_LINE_SET = `N_ICACHE_LINE_SET;
+  parameter N_ICACHE_DATA_BANK = `N_ICACHE_DATA_BANK; // 32 is instruction width
+
+  parameter ICACHE_OFFSET_WIDTH = `ICACHE_OFFSET_WIDTH;
+  parameter ICACHE_INDEX_WIDTH = `ICACHE_INDEX_WIDTH;
+  parameter ICACHE_TAG_WIDTH = `ICACHE_TAG_WIDTH;
+  parameter ICACHE_DRAM_TAG_WIDTH = `ICACHE_DRAM_TAG_WIDTH;
+
+  parameter ICACHE_TAG_MSB = `ICACHE_TAG_MSB;
+  parameter ICACHE_TAG_LSB = `ICACHE_TAG_LSB;
+
+  parameter ICACHE_INDEX_MSB = `ICACHE_INDEX_MSB;
+  parameter ICACHE_INDEX_LSB = `ICACHE_INDEX_LSB;
+
+  parameter ICACHE_DATA_BANK_ID_WIDTH = `ICACHE_DATA_BANK_ID_WIDTH;
+
+  parameter ICACHE_DATA_BANK_ID_MSB = `ICACHE_DATA_BANK_ID_MSB;
+  parameter ICACHE_DATA_BANK_ID_LSB = `ICACHE_DATA_BANK_ID_LSB;
+
+  // there is no DCACHE for now, just use the ICACHE number blow
+  parameter DCACHE_TAG_MSB = `DCACHE_TAG_MSB;
+  parameter DCACHE_TAG_LSB = `DCACHE_TAG_LSB;
+  parameter DCACHE_TAG_WIDTH = `DCACHE_TAG_WIDTH;
+
+  parameter DCACHE_INDEX_MSB = `DCACHE_INDEX_MSB;
+  parameter DCACHE_INDEX_LSB = `DCACHE_INDEX_LSB;
+  parameter DCACHE_INDEX_WIDTH = `DCACHE_INDEX_WIDTH;
+
+  parameter DCACHE_DATA_OFFSET_WIDTH = `DCACHE_DATA_OFFSET_WIDTH; // 64 is data width
+  parameter DCACHE_DATA_OFFSET_MSB = `DCACHE_DATA_OFFSET_MSB;
+  parameter DCACHE_DATA_OFFSET_LSB = `DCACHE_DATA_OFFSET_LSB;
+
+//   parameter N_DCACHE_SET = `N_DCACHE_SET;
+//   parameter DCACHE_OFFSET_WIDTH = `DCACHE_OFFSET_WIDTH;
+//   parameter DCACHE_INDEX_WIDTH = `DCACHE_INDEX_WIDTH;
+//   parameter DCACHE_TAG_WIDTH = `DCACHE_TAG_WIDTH;
+
+  parameter N_DMA_CHNL = `N_DMA_CHNL;
+  parameter N_DMA_SIZE_BIT = `N_DMA_SIZE_BIT;
+
+  // Multicycle arithmetic unit completion cycles
+  parameter N_CYCLE_INT_MUL = `N_CYCLE_INT_MUL;
+  parameter N_CYCLE_INT_DIV = `N_CYCLE_INT_DIV;
+
+  parameter N_CYCLE_INT_MUL_FPGA = `N_CYCLE_INT_MUL_FPGA;
+  parameter N_CYCLE_INT_DIV_FPGA = `N_CYCLE_INT_DIV_FPGA;
+
+  parameter N_CYCLE_FP_ADD_S = `N_CYCLE_FP_ADD_S;
+  parameter N_CYCLE_FP_ADD_D = `N_CYCLE_FP_ADD_D;
+
+  parameter N_CYCLE_FP_MAC_S = `N_CYCLE_FP_MAC_S;
+  parameter N_CYCLE_FP_MAC_D = `N_CYCLE_FP_MAC_D;
+
+  parameter N_CYCLE_FP_DIV_S = `N_CYCLE_FP_DIV_S;
+  parameter N_CYCLE_FP_DIV_D = `N_CYCLE_FP_DIV_D;
+
+  parameter N_CYCLE_FP_SQRT_S = `N_CYCLE_FP_SQRT_S;
+  parameter N_CYCLE_FP_SQRT_D = `N_CYCLE_FP_SQRT_D;
+
+  parameter N_CYCLE_FP_MISC = `N_CYCLE_FP_MISC;
+
+  // constant
+  parameter CONST_INST_NOP = 64'h00000013;
+
+  // constant for integer
+  parameter CONST_INT32_MIN = 32'h80000000;
+  parameter CONST_INT32_MAX = 32'h7fffffff;
+  parameter CONST_INT32U_MAX = 32'hffffffff;
+
+  // constant for floating-points
+  parameter CONST_FP_D_CANON_NAN  = {1'b0, {11{1'b1}}, 1'b1, 51'b0};
+  parameter CONST_FP_D_POS_ZERO   = 64'b0;
+  parameter CONST_FP_D_NEG_ZERO   = {1'b1, 63'b0};
+  parameter CONST_FP_D_POS_INF    = {1'b0, {11{1'b1}}, 52'b0};
+  parameter CONST_FP_D_NEG_INF    = {1'b1, {11{1'b1}}, 52'b0};
+
+  parameter CONST_FP_S_CANON_NAN  = {1'b0, {8{1'b1}}, 1'b1, 22'b0};
+  parameter CONST_FP_S_POS_ZERO   = 32'b0;
+  parameter CONST_FP_S_NEG_ZERO   = {1'b1, 31'b0};
+  parameter CONST_FP_S_POS_INF    = {1'b0, {8{1'b1}}, 23'b0};
+  parameter CONST_FP_S_NEG_INF    = {1'b1, {8{1'b1}}, 23'b0};
+
+  parameter MAGICMEM_OURSBUS_ID   = 6'b10_0001;
+
+endpackage

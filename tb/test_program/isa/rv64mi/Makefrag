@@ -1,0 +1,12 @@
+#=======================================================================
+# Makefrag for rv64mi tests
+#-----------------------------------------------------------------------
+
+rv64mi_sc_tests = \
+	csr \
+	ma_fetch \
+	ma_addr \
+	scall \
+	sbreak \
+
+rv64mi_p_tests = $(addprefix rv64mi-p-, $(rv64mi_sc_tests))

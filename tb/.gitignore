@@ -1,0 +1,15 @@
+*.vcd
+*simv*
+csrc/
+*.key
+*.csv
+*.bin
+*.riscv
+*.dump
+*.log
+*.vcd
+*.vpd*
+logs/
+sim_test_report.txt
+obj_dir/
+DVEfiles/

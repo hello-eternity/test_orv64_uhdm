@@ -1,0 +1,39 @@
+=head1 NAME
+
+Incoming GPG - downloads gpg packages from incoming ftp
+
+=head1 SYNOPSIS
+
+hydra.pl incoming_gpg I<USER> I<GPGFILE> I<GPGPASS>
+
+=head1 DESCRIPTION
+
+Download incoming packages from the Synopsys Asia FTP. Input your FTP password when prompted to.
+
+Assumptions:
+ 1. The target gpg file is located in the "/pub/outgoing" directory.
+ 2. The unencrypted ".gpg" file is a gzipped tarball.
+
+=head1 OPTIONS
+
+Unlike other Hydra functions, this takes positional arguments.
+
+=over
+
+=item B<USER>
+
+Your FTP username.
+
+=item B<GPGFILE>
+
+The target gpg file to download.
+
+=item B<SSLPASS>
+
+The gpg password for unencrypting the package.
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO

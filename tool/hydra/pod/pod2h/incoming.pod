@@ -1,0 +1,41 @@
+=head1 NAME
+
+Incoming - downloads packages from incoming sftp
+
+=head1 SYNOPSIS
+
+hydra.pl incoming I<USER> I<DIR> I<SSLPASS>
+
+=head1 DESCRIPTION
+
+Download incoming packages from the Synopsys China SFTP. Input your SFTP password when prompted to.
+
+Assumptions:
+ 1. The target directory is located in the "outgoing" directory.
+ 2. The target directory contains a ".enc" encrypted file.
+ 3. The unencrypted ".enc" file is a gzipped tarball.
+ 4. The target directory contains a ".md5" file for the gzipped tarball.
+
+=head1 OPTIONS
+
+Unlike other Hydra functions, this takes positional arguments.
+
+=over
+
+=item B<USER>
+
+Your SFTP username.
+
+=item B<DIR>
+
+The target directory to download.
+
+=item B<SSLPASS>
+
+The SSL password for unencrypting the package.
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO

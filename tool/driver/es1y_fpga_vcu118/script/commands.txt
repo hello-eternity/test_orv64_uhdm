@@ -1,0 +1,32 @@
+1: reset_hw_axi [get_hw_axis hw_axi_1] (edited) 
+2: Read txn: create_hw_axi_txn <name> [get_hw_axis hw_axi_1] -type read -address <address> (edited) 
+3: Write txn: create_hw_axi_txn <name> [get_hw_axis hw_axi_1] -type write -address <address> -data {12345678_12345678}
+
+if you reuse name, you will need -force to overwrite
+4: delete_hw_axi_txn [get_hw_axi_txns <name>]
+5: report_property [get_hw_axi_txns <name>]
+6: run_hw_axi [get_hw_axi_txns <name>]
+connect_hw_server -url ours-fpga:3121
+C code: /work/users/tian/pygmy-es2/tool/driver/es1y_fpga_vp0/common-socket.c
+
+create_hw_axi_txn rd [get_hw_axis hw_axi_1] -type read -force -address 0x0
+rd
+run_hw_axi [get_hw_axi_txns rd]
+INFO: [Labtoolstcl 44-481] READ DATA is: 1111222233334444
+
+  # set instr [expr [expr $message >> 120] & 0xff]
+  # puts $instr
+
+  # set addr [expr [expr $message >> 80] & 0x00ffffffffff]
+  # set addr [format %010x $addr]
+  # puts $addr
+
+  # set data [expr [expr $message >> 16] & 0x000000000000ffffffffffffffff]
+  # set data1 [expr [expr $data >> 32] & 0x00000000ffffffff]
+  # set data2 [expr $data & 0x00000000ffffffff]
+  # set data ""
+  # append data [format %08x $data1] "_" [format %08x $data2]
+  # puts $data
+
+  #set ack "00000000000000000000000000000000"
+  #puts -nonewline $channel $ack

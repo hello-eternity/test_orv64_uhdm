@@ -1,0 +1,30 @@
+=head1 NAME
+
+convert_lib - use library compiler to convert lib to db
+
+=head1 SYNOPSIS
+
+hydra.pl convert_lib [B<-dir> I<DIR>] [B<-lc_shell> I<BIN>]
+
+=head1 DESCRIPTION
+
+Find all .lib files in a directory and convert them to .db using library compiler.
+
+=head1 OPTIONS
+
+=over
+
+=item B<-dir>
+
+Specify a directory containing liberty files to convert. Optional. The current working directory will be used by default.
+
+=item B<-lc_shell>
+
+Specify a path to the library compiler binary. Optional. By default, the following will be used:
+ /work/tools/synopsys/lc/M-2017.06-SP3/bin/lc_shell
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO

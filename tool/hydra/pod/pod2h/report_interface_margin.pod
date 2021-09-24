@@ -1,0 +1,61 @@
+=head1 NAME
+
+report_interface_margin - report block-to-block interface timing margin
+
+=head1 SYNOPSIS
+
+hydra.pl report_interface_margin B<-rpt_dir> I<DIR> B<-blocks> I<NAME>... B<-pt_shell> I<PATH> [B<-skip> I<NAME>...] [B<-scenarios> I<NAME>...] [B<-set> I<NAME>]
+
+=head1 DESCRIPTION
+
+This script is intended to provide timing fix information when doing block-to-block timing on top level. It relies on a series of reports that are generated during a normal fullchip STA run. It will be called automatically after all scenarios finish. Do "hydra help STA" for more information on what params to set to enable this flow.
+
+During the normal fullchip STA run, "report_timing" will be called to find the single worst setup path and single worst hold path through each block pin for the current running scenario. This script will then look across all scenarios and find the single worst setup path and single worst hold path for each block pin. The raw setup and hold numbers from these paths will be listed for each block pin in the resulting margin report, sorted to show the block pin with the worst margin (calculated from the perspective of hold) at the top of each block. Since the effect on setup varies when fixing hold, this actual margin value is not shown.
+
+If there is no margin available for a block pin (which usually means that either setup or hold are clean; the cutoff point for reporting clean paths is set to 1ns using -slack_lesser_than), then the pin list will be sorted to show pins with the worst hold and then worst setup. Pins with margin will be listed after these. The list will therefore look something like: a list of pins with only hold numbers sorted by ascending hold slack, then a list of pins with only setup numbers sorted by ascending setup slack, and then a list of pins with both setup and hold numbers sorted by descending margin slack.
+
+Each block pin, for both setup and hold slack, reports the scenario in which that path was found and the "type" of the path. The "type" refers to the location of the startpoint and the location of the endpoint. If a point is located inside the block pin's block, then a "b" for "block" is used. If not, then a "t" for "top" is used. Thus, a path "type" of "t2b" means that the startpoint is located on top and the endpoint is located on block, so the path is a "top to block" connection. Likewise for all other combinations.
+
+At the top of the margin report, the scenario set will be listed. These are the scenarios that were considered when finding block pin setup and hold delays. The scenarios can be defined with the B<-scenarios> option.
+
+The final margin reports will be located in the ./rpt directory and will be named "<set_name>.margin.rpt", where <set_name> is defined by the B<-set> option.
+
+=head1 OPTIONS
+
+=over
+
+=item B<-rpt_dir>
+
+The directory containing block pin timing reports. Each scenario should have its own subdirectory in the following format. The script will use the existing subdirectories to determine what scenarios exist.
+ <mode>.<process>.<temp>.<rc>
+
+Each report name should also have the following format:
+ <block>.<delay_type>.margin.rpt
+
+=item B<-blocks>
+
+A list of the blocks. This is used solely to find the correct timing reports for each block.
+
+=item B<-scenarios>
+
+Only consider the given scenarios when gathering reference delays. Optional. If this is not defined, then all scenarios found in the directory given by B<-rpt_dir> are used.
+
+=item B<-skip>
+
+A list of block pins to skip. This was added to work around troublesome block pins that would crash Primetime. Optional.
+
+=item B<-set>
+
+The name of the scenario set. Optional. The name "all" will be used if this is not defined.
+
+=item B<-pt_shell>
+
+Path to the Primetime shell binary. This used when creating the script that kicks off margin reporting in Primetime.
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO
+
+process_interface_timing_margin

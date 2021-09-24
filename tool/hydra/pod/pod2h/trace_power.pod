@@ -1,0 +1,37 @@
+=head1 NAME
+
+trace_power - obtain power connection information from a netlist
+
+=head1 SYNOPSIS
+
+hydra.pl trace_power B<-vlg_files> I<FILE>... B<-top_module> I<NAME> B<-power_nets> I<NET>... [B<-cell_patterns> I<PATTERN>...]
+
+=head1 DESCRIPTION
+
+Obtain power connection information by reading all cell instances in the netlist(s). A list of power nets to be traced must be provided. For every cell, any pin connected to any of the power nets and the number of instances with that connection will be reported. If a list of patterns is provided, then cells that match a pattern will be grouped together. Otherwise, connections are reported separately for each cell.
+
+=head1 OPTIONS
+
+=over
+
+=item B<-vlg_files>
+
+One or more verilog netlist files.
+
+=item B<-top_module>
+
+The name of the top module in the design. This will be the only module that is instantiated (along with its submodules).
+
+=item B<-power_nets>
+
+A list of power nets to trace.
+
+=item B<-cell_patterns>
+
+A list of patterns that cells will be grouped into. Wildcards (*) are allowed. Optional.
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO

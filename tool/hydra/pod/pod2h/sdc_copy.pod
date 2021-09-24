@@ -1,0 +1,25 @@
+=head1 NAME
+
+SDC Copy - copy an SDC file
+
+=head1 SYNOPSIS
+
+hydra.pl sdc_copy B<-sdc> I<FILE>
+
+=head1 DESCRIPTION
+
+Copy the specified SDC file to the current working directory. The filename will be modified with the git commit date and the git hash will be added to the first line of the file as a comment.
+
+=head1 OPTIONS
+
+=over
+
+=item B<-sdc>
+
+The original SDC file.
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO

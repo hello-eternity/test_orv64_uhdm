@@ -1,0 +1,44 @@
+=head1 NAME
+
+Hydra Setup - generate runs
+
+=head1 SYNOPSIS
+
+hydra.pl setup B<-param> I<FILE>... B<-control> I<FILE> [-out_dir I<DIR>]
+
+=head1 DESCRIPTION
+
+Generate runs specified in the control file, using params from both the control file and param file. Each run will be generated in the current working directory unless B<-out_dir> is used.
+
+Hydra Setup will generate a complete directory structure for each run as follows:
+
+<run_name> - The name of the run specified by the START statement in the control file
+  -- /<run_type> - The type of run, e.g. pnr, sta, synth
+    -- HYDRA.run - execute this to start the run
+    -- /script   - all generated tool scripts 
+    -- /output   - output data files
+    -- /rpt      - report files
+    -- /log      - log files
+    -- /db       - saved database or session files
+
+=head1 OPTIONS
+
+=over
+
+=item B<-param>
+
+Param file. One or more may be used.
+
+=item B<-control>
+
+Control file. Only one may be used.
+
+=item B<-out_dir>
+
+Output directory. Optional. Hydra Setup will normally write to the current working directory, but you can have it move to another directory first before writing.
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO

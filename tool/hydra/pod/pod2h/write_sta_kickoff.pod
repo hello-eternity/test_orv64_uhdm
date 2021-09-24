@@ -1,0 +1,44 @@
+=head1 NAME
+
+Write STA Kickoff - Write a kickoff script to run RC_EXTRACT and STA in sequence
+
+=head1 SYNOPSIS
+
+hydra.pl write_sta_kickoff [-rules I<RULE>...]
+
+=head1 DESCRIPTION
+
+This script should be executed in the root run directory that contains your "rc_extract", "sta", and "sta_fullchip" flow directories.
+
+The idea with this script is to create a kickoff script that will execute RC_EXTRACT for an RC corner and then immediately execute STA runs that depend on that RC corner.
+
+Each STA and STA_FULLCHIP run will be read and grouped together by an associated RC_EXTRACT run. Every STA run will be set to run in the background while waiting for a license.
+
+=head1 OPTIONS
+
+=over
+
+=item B<-rules>
+
+A set of rules to prune STA scenarios that will be included. The format is:
+ <type>=<name>
+ mode=func
+
+The possible types are:
+ type (possible names: sta, sta_fullchip)
+ mode
+ pv
+ temp
+ rc
+
+For multiple names, add a comma with no spaces:
+ mode=func,scan
+
+Multiple rules can be defined with this option:
+ mode=func,scan rc=cworst temp=125c,m40c
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO

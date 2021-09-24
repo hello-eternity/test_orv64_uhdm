@@ -1,0 +1,108 @@
+=head1 NAME
+
+Netlist Navigator - Manually trace through a netlist
+
+=head1 SYNOPSIS
+
+hydra.pl netlist_navi B<-vlg_files> I<FILE>... B<-top_module> I<NAME> [B<-lib_files> I<FILE>...]
+
+=head1 DESCRIPTION
+
+This script opens a command prompt and provides a set of commands for manually tracing through a netlist. Use these commands to walk along "nodes"; each node represents either an instance's pin, or a single bit of an instance's bus pin. Hydra's netlist structure eliminates all nets, so all nodes are connected only to other nodes; e.g. pins are connected only to other pins with no net inbetween.
+
+You will start on a random pin on the top instance. Use the trace commands to move to your desired startpoint.
+
+All commands can be called with only the starting letter, e.g. "m" will call "move". If no command is given, then the last command will be executed. This will, for exampale, allow you to quickly issue multiple move commands in succession.
+
+The trace commands are as follows:
+
+=over
+
+=item B<help> [I<CMD>]
+
+Show a list of valid commands. If I<CMD> is given, then prints only help for that command.
+
+=item B<info>
+
+Show info on the current node.
+
+=item B<pin> [I<NAME>]
+
+Show all pins on the instance of the current node. If I<NAME> (a non-hierarchical pin name) is given, then move to the given pin on the current node.
+
+=item B<connection>
+
+Show all connections to the current node. This does not include connections through lib cells.
+
+=item B<move> input|output
+
+Move towards the input or output connection of the current node. This includes connections through lib cells.
+
+=item B<jump> I<NAME>
+
+Jump directly to the specified node. I<NAME> should be the full hierarchical name of the instance, pin, or net to jump to. If an instance is given, then you will move to a random pin on that instance. If a net is given, then you will be given a list of connected pins to move to.
+
+=item B<trace> input|output I<COND>=I<NAME>
+
+Trace in the specified direction (input or output) until the specified condition is met. Macros or unknown cells will not be traced through.
+
+This command can take time, as it may possibly need to trace down to all leaf cells. Input CTRL-C to stop the trace prematurely.
+
+I<COND> is the type of condition. Possible values are:
+ cell_type
+ cell_name
+ inst_hier_name
+ inst_hier_pin
+ inst_name
+
+I<NAME> is the name of the target, depending on condition; e.g., if I<COND> is cell_name, then I<NAME> is the name of the cell to trace for. If I<COND> is cell_type, then the possible values are:
+ ff
+ macro
+ pad
+ module
+ icg
+ std
+
+=item B<record> start|stop|save [I<FILE>]
+
+Record all manual trace movements. Do "record start" to start recording. Do "record stop" to stop recording. Do "record save" to write the saved trace path to a file. If I<FILE> is given, then "record save" will write to that file. By default, \"record.rpt\" will be used.
+
+=item B<net>
+
+Show the net connected to the current node. For module pins, this command is ambiguous in that it may give you either the inner or outer net. You can move towards the input or output connection and check the net there to clarify.
+
+=item B<find> I<MODULE> I<INST>
+
+Find and move to any instance. This is similar to the jump command but is used when you don't know the full hierarchical name of the instance. Provide the module name I<MODULE> and non-hierarchical instance name I<INST>. A random pin will be chosen to move to. Use the pin command afterward to move to your desired pin.
+
+Wildcards (*) are supported for both I<MODULE> and I<INST>.
+
+=item B<selection>
+
+Print an icc2 command that will select the current node.
+
+=item B<exit>
+
+=back
+
+=head1 OPTIONS
+
+=over
+
+=item B<-vlg_files>
+
+One or more verilog netlist files.
+
+=item B<-top_module>
+
+The name of the top module in the design. This will be the only module that is instantiated (along with its submodules).
+
+=item B<-lib_files>
+
+One or more liberty files. Optional, but strongly recommended as lib cells cannot be traced through without lib files.
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO

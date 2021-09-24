@@ -1,0 +1,75 @@
+=head1 NAME
+
+Promote Sdc - modify a module's sdc for a wrapper that instantiates that module
+
+=head1 SYNOPSIS
+
+hydra.pl promote_sdc B<-sdc> I<FILE> [B<-netlist> I<FILE>] [B<-target_inst> I<NAME>] [B<-module> I<NAME>] [B<-input_delay> I<VALUE>] [B<-output_delay> I<VALUE>] [B<-remove_clocks> I<NAME>...]
+
+=head1 DESCRIPTION
+
+Starts modifications for the sdc of a target module that has been instantiated inside a wrapper module. The modified sdc will be suitable for use when working on the scope of the wrapper module.
+
+There a few things that require manual modification after running this script.
+
+All create_clock statements are converted to create_generated_clock statements. For each of these, you must manually specify the source clock. Search the promoted sdc for "<required>" to easily reach these statements.
+
+New port input/output delays are either set to zero or blanket-set to the values given by options B<-input_delay> and B<-output_delay> and may need to be examined.
+
+WARNING: A limitation of the current sdc parser is that all object references must use a "get" command (e.g. get_pins, get_clocks). Objects that do not use a "get" command will not be recognized and will remain untouched.
+
+=over
+
+=item Processing on Specific SDC Commands
+
+The following is a list of commands that are completely stripped out:
+ set_driving_cell
+ set_load
+ set_input_delay
+ set_output_delay
+ set_port_fanout_number
+ group_path
+
+If the B<-remove_clocks> option is used, then the following commands are complete stripped out:
+ set_clock_* (except: set_clock_groups, set_clock_gating_check)
+ set_clock_groups will be removed if all clocks were removed
+
+=back
+
+=head1 OPTIONS
+
+=over
+
+=item B<-netlist>
+
+A netlist containing the module wrapper. Optional, but either this or B<-target_inst> must be defined. If this option is defined, then the target module will be promoted only one hierarchy level up.
+
+=item B<-target_inst>
+
+The hierarchical path to the instance that the target module will be promoted to. The target module will be a sub-instance of the given instance. Optional, but either this or B<-netlist> must be defined.
+
+=item B<-sdc>
+
+The sdc file for the target module.
+
+=item B<-module>
+
+The name of the target module. Optional. If not given, then the script will try the sdc file name.
+
+=item B<-input_delay>
+
+Specify an input delay to apply to all input ports of the wrapper module. Optional. If not given, all ports will get an input delay of 0.
+
+=item B<-output_delay>
+
+Specify an output delay to apply to all output ports of the wrapper module. Optional. If not given, all ports will get an output delay of 0.
+
+=item B<-remove_clocks>
+
+Specify a list of clocks to remove. All references to each clock will either be removed, or the offending statement will be commented out if the clock removal makes the statement invalid.
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO

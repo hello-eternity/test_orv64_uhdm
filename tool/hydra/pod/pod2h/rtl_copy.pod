@@ -1,0 +1,29 @@
+=head1 NAME
+
+RTL Copy - copy RTL files from an flist
+
+=head1 SYNOPSIS
+
+hydra.pl rtl_copy B<-rtl_flist> I<FILE>
+
+=head1 DESCRIPTION
+
+Read the given RTL flist, expand it, and copy all file entries. A new directory is created in the current working directory with the block name (derived from the flist name) and the git commit hash (of the directory that the flist is located in).
+
+Each file is also read for `include files; for any that are found, the `include file is also copied into the current working directory and the original source file is modified to point to copied `include file.
+
+Also included is a new flist (with the same name as the original flist) that should be used in place of the original.
+
+=head1 OPTIONS
+
+=over
+
+=item B<-rtl_flist>
+
+The original RTL flist.
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO

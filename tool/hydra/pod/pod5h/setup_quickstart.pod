@@ -1,0 +1,45 @@
+=head1 NAME
+
+setup quickstart - a quick guide on using Hydra Setup
+
+=head1 DESCRIPTION
+
+Hydra Setup is a repository of ASIC tool flows that is meant to simplify and streamline the process of working with tools. The idea is to boil tasks down into the minimum required inputs, provide easily accessible storage for those inputs, and keep scripts simple and readable.
+
+Flow inputs are stored in 2-3 different files: a param file (you can think of this as a global file used for the entire project) and a control file (a local file, one for each block). Sometimes there may be a library file, which is the same as a param file but only stores library lists. These lists tend to be extremely long, so separating them into another file helps with readability. Inputs (we call them "params") defined in the control file will always override those in the param file. Running Hydra Setup with the param and control files will produce your run.
+
+Follow these steps to prepare your flow for generation.
+
+=over
+
+=item B<Set the HYDRA_HOME env variable>
+
+If you can read this, then you have likely already done this. Set HYDRA_HOME to the home directory of Hydra. Calling Hydra is done with "${HYDRA_HOME}/hydra.pl". Start from now in this document, this will be shortened to "hydra" for simplicity.
+
+=item B<Locate The Param File>
+
+Ask your project lead for the location of this file. There may also be a library param file as well.
+
+=item B<Determine the Flow Name>
+
+Hydra has self-explanatory names for each type of task. You must know the flow name to generate a run for it. Doing "hydra help" will list all flows available.
+
+=item B<Determine Params to Override>
+
+Once you know your flow name, do a search for it inside the param file. The param file contains every valid param for all flows. Param names will always be prefixed with the applicable flow name, so searching for the flow name in the param file is a good way to find what params are available to you for your flow. Params that you choose to use will go into your control file. Some params may already have the correct value, so you need not add it to your control file. On the other hand, you must add params with the value "<required>", indicating a param that must have a value. You can do "hydra help <PARAM_NAME>" on any param to see a quick explanation of it.
+
+=item B<Write the Control File>
+
+Add your flow name and params to the control file. Required reading for this can be brought up with "hydra help param"; this will go into detail on the syntax of the param file, control file, and params.
+
+=item B<Run Hydra Setup>
+
+Execute Hydra Setup to create your run. Required reading for this can be brought up with "hydra help setup". Inside the generated directory, execute the file "HYDRA.run" to start the run. This directory is self-contained (note that inputs obtained from params are NOT locally copied) and can be copied to produced an identical run. You may also choose to directly edit the run; all tool scripts are contained in the /script directory.
+
+=back
+
+=head1 SEE ALSO
+
+ help
+ param
+ setup

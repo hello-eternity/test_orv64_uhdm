@@ -1,0 +1,23 @@
+=head1 NAME
+
+hydra - a suite of ASIC CAD tools
+
+=head1 SYNOPSIS
+
+hydra.pl I<COMMAND>
+
+=head1 DESCRIPTION
+
+=head1 OPTIONS
+
+=over
+
+=item B<COMMAND>
+
+Use the command "help" to see a list of commands.
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO

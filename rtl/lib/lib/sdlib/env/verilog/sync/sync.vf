@@ -1,0 +1,5 @@
+sync_bench.v
+../common/sd_seq_check.v
+../common/sd_seq_gen.v
+-y ../../../rtl/verilog/closure
+-y ../../../rtl/verilog/utility

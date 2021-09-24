@@ -1,0 +1,147 @@
+=head1 NAME
+
+trace_clock - obtain clock path information from netlist and liberty files
+
+=head1 SYNOPSIS
+
+hydra.pl trace_clock B<-vlg_files> I<FILE>... B<-top_module> I<NAME> [B<-clocks> I<CLOCK>...] [B<-lib_files> I<FILE>...] [B<-macro_cells> I<NAME>]
+
+=head1 DESCRIPTION
+
+Obtain clock path information by reading the netlist(s) and tracing from each clock startpoint. The trace includes only lib cells, not nets or module boundaries. Sinks are explicitly shown in the output report trace_clock.rpt, but are summarized in a secondary trace_clock.rpt.sum report.
+
+A third trace_clock.rpt.collapse_icg report is the same as the secondary .sum report, but makes all ICG cells transparent. This means that an ICG cell will not be reported and its downstream sink count will instead be merged into its current level. In the following example, note that the ICG cells on level (1) and (2) are gone in the .collapse_icg report and their sink counts are combined into the level (1) entry.
+
+ trace_clock.rpt.sum report:
+  (0) soc_top_u/clk_mux_u/U1 : ZN [ref: IOA22D1BWP40P140] [fanout: 1] {STD} 
+    (1) soc_top_u/icg_u/d4_LNQ : CP -> Q [ref: CKLNQD4BWP35P140] [fanout: 166] [pre_comb_count: 7]  {ICG}
+      (2) ===== FLOP SINKS: 143
+      (2) soc_top_u/clk_gate/latch : CP -> Q [ref: CKLNQD1BWP30P140HVT] [fanout: 9] [pre_comb_count: 7]  {ICG}
+        (3) ===== FLOP SINKS: 9
+      (2) soc_top_u/scl_reg/latch : CP -> Q [ref: CKLNQD1BWP30P140HVT] [fanout: 5] [pre_comb_count: 7]  {ICG}
+        (3) ===== FLOP SINKS: 5
+
+ trace_clock.rpt.collapse_icg report:
+  (0) soc_top_u/clk_mux_u/U1 : ZN [ref: IOA22D1BWP40P140] [fanout: 1] {STD} 
+    (1) ===== FLOP SINKS: 157
+
+
+Each entry contains the hierarchical instance name, pin name, cell name, and cell type. Possible cell types are:
+
+=over
+
+=item B< ICG>
+
+An integrated clock gator. Two pin names are shown for this type: <input> -> <output>. The lib attributes "clock_gate_clock_pin" and "clock_gate_out_pin" are used to determine input and output pins.
+
+=item B< MACRO>
+
+A cell defined as a macro. The trace always stops at macros. The lib attribute "is_macro_cell" is used to determine whether a lib cell is a macro or not.
+
+=item B< PAD>
+
+A cell defined as a pad. The trace always stops at pads. The lib attribute "pad_cell" is used to determine whether a lib cell is a pad or not.
+
+=item B< STD>
+
+A cell that is not a macro or pad that can be traced through. Two pin names are shown for this type: <input> -> <output>. The lib attribute "function" (or the "related_pin" attribute of the "timing" group if "function" is unavailable)  is used to determine input and output pins.
+
+=item B< OUTPUT_PORT>
+
+An output port for the top module. This counts as a sink.
+
+=item B< SINK>
+
+A cell that the trace stops at. The trace may stop because 1) the input pin is a clock pin (determined by lib attribute "clock"), or 2) the input pin does not trace through to an output pin.
+
+=item B< NO_LIB>
+
+A cell that the trace stops at due to a lack of library data.
+
+=item B< CLOCK_ROOT>
+
+If the trace of a current clock runs into the root of another clock, the trace will stop and the current entry will be reported as a CLOCK_ROOT. The root of a clock counts not only as the actual startpoint pin as defined in the B<-clocks> option, but also as the data and clock pins of instance of the startpoint.
+
+For example, if you have clockA with startpoint flopA/Q, the trace of clockB will stop if it encounters flopA/D or flopA/CP (assuming the data and clock pins of flopA are D and CP respectively).
+
+=item B< SUBTREE_*>
+
+A cell that is the root for a reconvergence point. Subtrees are all printed at the end of the report after all normal clock traces. The subtree trace is identical to a normal trace, but starts at the output pin of the reconvergence point.
+
+=back
+
+
+Some entries keep a count of certain connections. These will show up when the count is more than 0 and includes:
+
+=over
+
+=item B< [fanout: 1]>
+
+The immediate fanout of the current pin.
+
+=item B< [pre_comb_count: 1]>
+
+The number of combinational cells found upstream. For ICG cells only.
+
+=item B< [post_comb_count: 1]>
+
+The number of combinational cells found downstream. For ICG cells only.
+
+=back
+
+=head1 OPTIONS
+
+=over
+
+=item B<-vlg_files>
+
+One or more verilog netlist files.
+
+=item B<-top_module>
+
+The name of the top module in the design. This will be the only module that is instantiated (along with its submodules). If -sdc_files are given, then this will be prepended onto each clock startpoint.
+
+=item B<-clocks>
+
+A list of clock startpoints at which to begin tracing. Each entry should have the format <clock_name>:<startpoint>, e.g. "TEST_CLK:sub_mod/instA/pinZ". The top module should not be included in the startpoint, as that is automatically added.
+
+If a startpoint is a module port, then the script will attempt to trace backwards to a real cell to start at instead. Success or failure of the backward trace will be reported but can generally be ignored.
+
+=item B<-lib_files>
+
+One or more liberty files. Optional, but strongly recommended as lib cells cannot be traced through without lib files. May be used in conjunction with B<-lib_dirs>.
+
+=item B<-macro_cells>
+
+Cells listed here will be treated as macros, meaning that the trace will stop and the point will be reported as a MACRO. This option supports only "*" as a wildcard.
+
+=back
+
+=head1 EXAMPLES
+
+=over
+
+=item B<(0) top/A_nm_35_11_block/B_aje_clk : P_52 [ref: nm_35_11_a] [fanout: 22] {STD}>
+
+An entry in the trace clock report. This indicaztes that on the 0th hierarchy level (always a user-defined startpoint), the instance top/A_nm_35_11_block/B_aje_clk and pin P_52 is a std cell with 22 fanout. The instance cell is nm_35_11_a.
+
+=item B<(2) top/core_A/A_euw_top/dje_clk_switch/flop_clk : CP [ref: ie_ejes4q7]  {SINK}>
+
+This shows a sink where the trace stops.
+
+=item B<(1) top/core_A/A_euw_top/startup_cntrl/clock_gt/A_hs_ckgt5a4 : CLOCK ->>B< CLOCKGATED [ref: hs_ckgt5a4] [fanout: 4] [pre_comb_count: 10] [post_comb_count: 5] {ICG}>
+
+This is an ICG cell that is traced through from input pin CLOCK to output pin CLOCKGATED. This ICG has 10 combinational cells upstream and 5 combinational cells downstream of it.
+
+=item B<(3) top/core_A/A_euw_top/dje_clk_switch/clk_out : A1 ->>B< Z [ref: hs_nwhddd5s4]  {SUBTREE_top/core_A/A_euw_top/dje_clk_switch/clk_out_PIN_Z}>
+
+This is a cell that is the root for a reconvergence point. The subtree name is always "SUBTREE_<instname>_PIN_<pinname>" and is printed at the end of the report.
+
+=item B<(2) ===== FLOP SINKS: 12>
+
+This entry is from the trace_clock.rpt.sum report. All flop sinks are summarized instead of explicitly reported. The sum includes SINKs, OUTPUT_PORTs, and NO_LIBs.
+
+=back
+
+=head1 SEE ALSO
+

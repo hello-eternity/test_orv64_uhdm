@@ -1,0 +1,33 @@
+=head1 NAME
+
+Split ECO - splits an ECO script into multiple top and block scripts
+
+=head1 SYNOPSIS
+
+hydra.pl split_eco -script I<FILE> -blocks I<INST_HIER>...
+
+=head1 DESCRIPTION
+
+This script reads in an ICC2 ECO script and splits it into multiple scripts; one for each block and one for top. It works by searching for "current_instance" commands for block instances defined by the user. Any ECO commands that do not fall under an instance given by the user is considered to be top level.
+
+=head1 OPTIONS
+
+=over
+
+=item B<-script>
+
+The ECO script.
+
+=item B<-blocks>
+
+A list of block instances that the ECO script will be split by. Use the full hierarchical name of the block.
+
+ -blocks soc_top_u/ddr_top_u \
+         soc_top_u/usb_u \
+         soc_top_u/vp0_u
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO

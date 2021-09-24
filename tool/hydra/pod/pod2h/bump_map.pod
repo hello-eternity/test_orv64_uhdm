@@ -1,0 +1,108 @@
+=head1 NAME
+
+bump_map - generates a bump cell placement script
+
+=head1 SYNOPSIS
+
+hydra.pl bump_map B<-design> I<NAME> B<-map_csv> I<FILE> B<-bump_size> I<NUM> B<-hori_spacing> I<NUM> B<-vert_spacing> I<NUM> B<-signal_bump_cell> I<NAME> B<-ur_chip_coords> I<X,Y> [B<-id_csv> I<FILE>] [B<-block_via_layer> I<LAYERNAME>]
+
+=head1 DESCRIPTION
+
+This script faciliates visual bump mapping via a csv spreadsheet. Bump cells will be created, placed, and connected to signals according to how the spreadsheet is arranged and what data is included.
+
+An aif file that can be read into ICC2 will be generated along with a secondary csv spreadshee that lists the created bump instances, what signals they connect to, and their placement coordinates.
+
+Bumps can be specified with a "pad ID" that corresponds to the pad that will be connected to it. This is intended to help faciliate padframe placement. The ID should have no whitespace and start with a "T", "B", "L", or "R" and can be followed by any string.
+
+If a bump is named "DUMMY" or "NC", then the bump will be created but will be unconnected.
+
+=over
+
+=item B<Map CSV Format>
+
+The bump grid is defined in the spreadsheet visually. Each cell corresponds to one bump. Each bump is placed in the order that they appear in the spreadsheet in relation to one another. You can expect that every bump on a given row will all have the same Y coordiante, along with every bump on a given column will all have the same X coordinate.
+
+In the following ascii example, each square is a cell of the spreadsheet. The placed bumps will also form a "T" pattern as the example shows.
+ ----------------
+ | T1 | T2 | T3 |
+ ----------------
+ |    | L1 |    |
+ ----------------
+ |    | B2 |    |
+ ----------------
+
+Each cell can have four different values.
+ 1. A signal name only. The bump instance will be created based on the signal name and the row/col that it appears in. This is for bumps that are not connected to a pad (e.g. power/ground bumps).
+ 2. A pad ID followed by a signal name. There should be one or more spaces between the two. The bump instance will be created based on the both of the pad ID and signal name. This is for bumps that will be connected to a pad.
+ 3. Empty. No bump instance will be placed in this position, but the spacing will be preserved.
+ 4. A pad ID only. The ID csv must have a mapping between this ID and a signal name if this value is used. This is intended for bumps that are connected to a signal with a very long name.
+
+=item B<ID CSV Format>
+
+This spreadsheet maps pad IDs to signal names and is only referenced if a cell in the map spreadsheet only contains a pad ID. The first column should list the pad IDs with the second column listing the corresponding signal names. This can be omitted if all signal names are specified in the map spreadsheet.
+
+---------------------
+|   T1   | test_clk |
+---------------------
+|   T2   | jtag_clk |
+---------------------
+
+The first row is assumed to be a header and skipped. Any row with an empty ID column will be skipped.
+
+=item B<Bump Placement>
+
+The map spreadsheet defines bump placement in relation to one another, but B<-ur_chip_coords>, B<-bump_size>, B<-hori_spacing>, and B<-vert_spacing> options determine their actual coordinates.
+
+The bump grid is first determined by finding the bounding box of all cells in the map spreadsheet. Empty trailing rows and columns are trimmed and not included in this. Depending on the bump size and spacing, the real size of the grid is obtained.
+
+The grid is then placed in the center of the chip, and all bumps are placed accordingly.
+
+=back
+
+=head1 OPTIONS
+
+=over
+
+=item B<-design>
+
+The top module name.
+
+=item B<-map_csv>
+
+A csv file containing bumps to be placed.
+
+=item B<-bump_size>
+
+The width/height of the bump. The bump is assumed to be square.
+
+=item B<-hori_spacing>
+
+The horizontal spacing between each bump. This should be the center-to-center spacing, not right-edge to left-edge spacing.
+
+=item B<-vert_spacing>
+
+The vertical spacing between each bump. This should be the center-to-center spacing, not top-edge to bottom-edge spacing.
+
+=item B<-signal_bump_cell>
+
+The cell type to be used.
+
+=item B<-ur_chip_coords>
+
+The upper-right coordinates of the chip. Use the format "X,Y" with no whitespace. The lower-left coordinates of the chip are assumed to be (0,0).
+
+=item B<-id_csv>
+
+A csv file containing a mapping of ID names to signal names. Optional. This mapping is only referenced if the signal name is not provided for a particular bump in B<-map_csv>.
+
+=item B<-block_via_layer>
+
+If a layer name is specified here, then a tcl script will be written that creates blockages on the specified layer over the bounding box of each created bump.
+
+Option Description.
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO

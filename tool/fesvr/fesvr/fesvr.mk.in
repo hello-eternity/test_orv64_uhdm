@@ -1,0 +1,233 @@
+ifeq ($(PROJECT_NAME),es1y)
+  fesvr_hdrs = \
+    elf.h \
+    elfloader.h \
+    htif.h \
+    dtm.h \
+    memif.h \
+    syscall.h \
+    context.h \
+    htif_pthread.h \
+    htif_hexwriter.h \
+    option_parser.h \
+    term.h \
+    device.h \
+    rfb.h \
+    tsi.h \
+    htif_proj.h \
+    es1y/es1y.h \
+  
+  fesvr_objs = \
+    elfloader.o \
+    htif.o \
+    memif.o \
+    dtm.o \
+    syscall.o \
+    device.o \
+    rfb.o \
+    context.o \
+    htif_pthread.o \
+    htif_hexwriter.o \
+    dummy.o \
+    option_parser.o \
+    term.o \
+    tsi.o \
+    es1y.o \
+  
+  fesvr_srcs = \
+    elfloader.cc \
+    htif.cc \
+    memif.cc \
+    dtm.cc \
+    syscall.cc \
+    device.cc \
+    rfb.cc \
+    context.cc \
+    htif_pthread.cc \
+    htif_hexwriter.cc \
+    dummy.cc \
+    option_parser.cc \
+    term.cc \
+    tsi.cc \
+    es1y/es1y.cc \
+    es1y/sdio_init.cc \
+    es1y/es1y_bg.cc \
+
+  fesvr_install_prog_srcs = \
+    elf2hex.cc \
+
+else ifeq ($(PROJECT_NAME),pygmy_e)
+  fesvr_hdrs = \
+    elf.h \
+    elfloader.h \
+    htif.h \
+    dtm.h \
+    memif.h \
+    syscall.h \
+    context.h \
+    htif_pthread.h \
+    htif_hexwriter.h \
+    option_parser.h \
+    term.h \
+    device.h \
+    rfb.h \
+    tsi.h \
+    htif_proj.h \
+    pygmy_e/pygmy_e.h \
+  
+  fesvr_objs = \
+    elfloader.o \
+    htif.o \
+    memif.o \
+    dtm.o \
+    syscall.o \
+    device.o \
+    rfb.o \
+    context.o \
+    htif_pthread.o \
+    htif_hexwriter.o \
+    dummy.o \
+    option_parser.o \
+    term.o \
+    tsi.o \
+    pygmy_e.o \
+  
+  fesvr_srcs = \
+    elfloader.cc \
+    htif.cc \
+    memif.cc \
+    dtm.cc \
+    syscall.cc \
+    device.cc \
+    rfb.cc \
+    context.cc \
+    htif_pthread.cc \
+    htif_hexwriter.cc \
+    dummy.cc \
+    option_parser.cc \
+    term.cc \
+    tsi.cc \
+    pygmy_e/pygmy_e.cc \
+    pygmy_e/sdio_init.cc \
+    pygmy_e/pygmy_e_bg.cc \
+
+  fesvr_install_prog_srcs = \
+    elf2hex.cc \
+
+else ifeq ($(PROJECT_NAME),es1x)
+  fesvr_hdrs = \
+    elf.h \
+    elfloader.h \
+    htif.h \
+    dtm.h \
+    memif.h \
+    syscall.h \
+    context.h \
+    htif_pthread.h \
+    htif_hexwriter.h \
+    option_parser.h \
+    term.h \
+    device.h \
+    rfb.h \
+    tsi.h \
+    htif_proj.h \
+    es1x/es1x.h \
+  
+  fesvr_objs = \
+    elfloader.o \
+    htif.o \
+    memif.o \
+    dtm.o \
+    syscall.o \
+    device.o \
+    rfb.o \
+    context.o \
+    htif_pthread.o \
+    htif_hexwriter.o \
+    dummy.o \
+    option_parser.o \
+    term.o \
+    tsi.o \
+    es1x.o \
+  
+  fesvr_srcs = \
+    elfloader.cc \
+    htif.cc \
+    memif.cc \
+    dtm.cc \
+    syscall.cc \
+    device.cc \
+    rfb.cc \
+    context.cc \
+    htif_pthread.cc \
+    htif_hexwriter.cc \
+    dummy.cc \
+    option_parser.cc \
+    term.cc \
+    tsi.cc \
+    es1x/es1x.cc \
+
+  fesvr_install_prog_srcs = \
+    elf2hex.cc \
+
+else ifeq ($(PROJECT_NAME),demo)
+  fesvr_hdrs = \
+    elf.h \
+    elfloader.h \
+    htif.h \
+    dtm.h \
+    memif.h \
+    syscall.h \
+    context.h \
+    htif_pthread.h \
+    htif_hexwriter.h \
+    option_parser.h \
+    term.h \
+    device.h \
+    rfb.h \
+    tsi.h \
+    htif_proj.h \
+    es1x/es1x.h \
+  
+  fesvr_objs = \
+    elfloader.o \
+    htif.o \
+    memif.o \
+    dtm.o \
+    syscall.o \
+    device.o \
+    rfb.o \
+    context.o \
+    htif_pthread.o \
+    htif_hexwriter.o \
+    dummy.o \
+    option_parser.o \
+    term.o \
+    tsi.o \
+    es1x.o \
+  
+  fesvr_srcs = \
+    elfloader.cc \
+    htif.cc \
+    memif.cc \
+    dtm.cc \
+    syscall.cc \
+    device.cc \
+    rfb.cc \
+    context.cc \
+    htif_pthread.cc \
+    htif_hexwriter.cc \
+    dummy.cc \
+    option_parser.cc \
+    term.cc \
+    tsi.cc \
+    es1x/es1x.cc \
+
+else
+  fesvr_hdrs = PLACEHOLDER.h\
+
+  fesvr_objs = PLACEHOLDER.h\
+
+  fesvr_srcs = PLACEHOLDER.h\
+
+endif

@@ -1,0 +1,48 @@
+=head1 NAME
+
+trace_hierarchy - obtain hierarchy information from a netlist
+
+=head1 SYNOPSIS
+
+hydra.pl trace_hierarchy B<-vlg_files> I<FILE>... B<-top_module> I<NAME> [B<-lib_files> I<FILE>...]
+
+=head1 DESCRIPTION
+
+Obtain hierarchy information by reading the netlist(s) and tracing from the top module down through its submodules. The number of std, macro, pad, and submodule sub-instances for each instance is listed; these figures do not include any sub-instances found within sub-modules. The only exception is a "std sum" figure which is the total number of std cells found including submodules. When the "std" and "std sum" counts are identical, only the "std" will be listed. When any of these figures are 0, they will not be listed.
+
+Any cell that is not a module is assumed to be a std cell. If liberty files are provided, then std cells will be differentiated from macro and pad cells by the existence of certain attributes in the liberty file for that cell. The attribute "is_macro_cell : true" indicates that the cell is a macro, and the attribute "pad_cell : true" indicates that a cell is a pad. The cell is considered to be a std cell otherwise. Any macro or pad instances found will be listed under the parent instance.
+
+=head1 OPTIONS
+
+=over
+
+=item B<-vlg_files>
+
+One or more verilog netlist files.
+
+=item B<-top_module>
+
+The name of the top module in the design. This will be the only module that is instantiated (along with its submodules).
+
+=item B<-lib_files>
+
+One or more liberty files. Optional. May be used in conjunction with B<-lib_dirs>. Only used to determine whether a non-module cell is a macro, pad, or std cell.
+
+=back
+
+=head1 EXAMPLES
+
+=item B<(0) AHE282A [module: AHE282A] std=434 std_sum=3270847 mod=263  pad=247>
+
+An entry in the hierarchy trace report. This indicates that on the 0th hierarchy level (always the top module), the module AHE282A contains 434 std cells within itself, 3270847 std cells within itself AND within submodules, 263 submodules within itself, and 247 pad cells within itself.
+
+=item B<(9) WHRCHU [module: AHJEH_FH_RTJEJ_AJEGEN_WHECHI_GROUP1_0SAJ893A] std=7>
+
+On the ninth hierarchy level, WHRCHU, an instance of module AHJEH_FH_RTJEJ_AJEGEN_WHECHI_GROUP1_0SAJ893A, has 7 std cells. There is no "std_sum" figure; this means that 7 std cells were counted both within only itself and when including those within submodules as well.
+
+=item B<(1) IO_EJRJFP [ref: AJRJEFYGFH100_A] {PAD}>
+
+On the first hierarchy level, IO_EJRJFP, an instance of cell AJRJEFYGFH100_A, is a pad.
+
+=head1 SEE ALSO
+

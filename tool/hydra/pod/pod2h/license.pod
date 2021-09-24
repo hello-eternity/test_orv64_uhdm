@@ -1,0 +1,17 @@
+=head1 NAME
+
+license - checks for tool license expiration
+
+=head1 SYNOPSIS
+
+hydra.pl license
+
+=head1 DESCRIPTION
+
+Reads the output of "lmstat -i" and sorts all licenses by expiration date. Licenses that have already expired will include an "EXPIRED" note. Licenses that have less than one week to expire will be noted with "< 1 WEEK".
+
+=head1 OPTIONS
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO

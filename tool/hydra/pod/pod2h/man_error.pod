@@ -1,0 +1,21 @@
+=head1 NAME
+
+man_error - Search for and display manpage for a tool error code
+
+=head1 SYNOPSIS
+
+hydra.pl man_error B<ERROR_CODE>
+
+=head1 DESCRIPTION
+
+Searches through all tool install directories for a manpage that matches the given error code. Currently only works for Synopsys tools.
+
+=head1 OPTIONS
+
+=over
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO

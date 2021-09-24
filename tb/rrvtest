@@ -1,0 +1,203 @@
+#!/usr/bin/env python3
+import getopt
+import sys
+from elftools.elf.elffile import ELFFile 
+import subprocess
+import time
+import os
+import signal
+import fcntl   
+import socket
+from ctypes import *
+
+TIMEOUT = 600
+RET_OK = 0
+RET_FAIL = 1
+RET_ERR = 2
+RET_TIMEOUT = 3
+RET_COSIM_FAIL = 4
+RET_SETUP_ERR = 5
+
+class ELF(object):
+    def __init__(self,elffile):
+        self.elffile = open(elffile,"rb")
+        self.elf = ELFFile(self.elffile)    
+        self.elfPATH = elffile
+        self.check_isa()
+    def __del__(self):
+        self.elffile.close()
+    def _SymbolTable(self):
+        return self.elf.get_section_by_name(".symtab")
+    def _start(self):
+        return self._SymbolTable().get_symbol_by_name("_start")[0]["st_value"]
+    def _end(self):
+        return self._SymbolTable().get_symbol_by_name("_end")[0]["st_value"]
+    def _tohost(self):
+        return self._SymbolTable().get_symbol_by_name("tohost")[0]["st_value"]
+    def _fromhost(self):
+        return self._SymbolTable().get_symbol_by_name("fromhost")[0]["st_value"]
+    def check_isa(self):
+        assert self.elf.get_machine_arch() == "RISC-V"
+    def log_information(self,dut):
+        print(
+"""Successfully load elf '%s'
+*-------------------------------
+* tohost   | =   %08x
+* fromhost | =   %08x
+* _start   | =   %08x
+* _end     | =   %08x
+*-------------------------------""" % (self.elfPATH, self._tohost(), self._fromhost(), self._start(), self._end()))
+
+
+def usage():
+    print( 'usage: \n' \
+        ' -h: help \n' \
+        ' -e <path>: run single elf (quiet mode)\n' \
+        ' -E <path>: run single elf (noisy mode)\n' \
+    )
+
+def objcopy(path):
+    ret = None
+    binpath = path + '.bin'
+    t_begin = time.time()
+    p = subprocess.Popen(['riscv64-unknown-linux-gnu-objcopy', '-O', 'binary', path, binpath], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
+    while True:
+        ret = p.poll()
+        if ret is not None:
+            break
+        t_passed = time.time() - t_begin
+        if t_passed > 10:
+            p.terminate()
+            os.killpg(p.pid, signal.SIGKILL)
+            return RET_TIMEOUT, ''
+        time.sleep(0.1)
+    return RET_OK if ret == 0 else RET_ERR, binpath
+
+def non_block_read(output):    
+    fd = output.fileno()    
+    fl = fcntl.fcntl(fd, fcntl.F_GETFL)    
+    fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)    
+    try:    
+        return output.read().decode('utf-8')
+    except:    
+        return ""  
+
+def run_single_elf(path, timeout_s, noisy, cosim, dump):
+
+    if not os.path.exists('simv'):
+        print("simv is not exist! please make vcs first")
+        return RET_SETUP_ERR
+    if timeout_s < 0:
+        print("timeout must not less than 0")
+        return RET_SETUP_ERR
+    try:
+        elf = ELF(path)
+    except:
+        print('%s is not a rv64 elf file' % (path))
+        return RET_SETUP_ERR
+    succ, binpath = objcopy(path)
+    if succ != RET_OK:
+        print("%s is not a elf file or is not exist" % (path))
+        return RET_SETUP_ERR
+    
+
+    t_begin = time.time()
+    cmd = './simv +backdoor_load_image=%s +set_vp0_rst_pc=%x +set_tohost_addr=%x +set_fromhost_addr=%x' % (binpath, elf._start(), elf._tohost(), elf._fromhost())
+    if cosim:
+        cmd += ' +cosim=%s' % (path)
+    if dump:
+        cmd += ' +dump'
+
+    print ('cmd: %s' % (cmd))
+    out = ''
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
+    while True:
+        ret = p.poll()
+        line = non_block_read(p.stdout)
+        out += line
+        if noisy:
+            print(line, end='')
+        if ret is not None:
+            break
+        t_passed = time.time() - t_begin
+        if timeout_s > 0 and t_passed > timeout_s:
+            p.terminate()
+            os.killpg(p.pid, signal.SIGKILL)
+            print("Timeout!")
+            os.remove(binpath)
+            return RET_TIMEOUT
+        time.sleep(0.1)
+
+    os.remove(binpath)
+    if 'receive exit code:' in out:
+        print('DONE')
+        if 'receive exit code: 00000001' in out:
+            print("PASS")
+            return RET_OK
+        else:
+            print("FAIL")
+            return RET_FAIL
+    elif 'inconsistency found!' in out:
+        print('DONE')
+        p.terminate()
+        print('COSIM FAIL')
+        return RET_COSIM_FAIL
+    else :
+        print("ERR WITH CODE: %d" % (p.returncode))
+        return RET_ERR
+
+def regression(timeout_s, noisy, cosim):
+    total_cnt = 0
+    pass_cnt = 0
+    fail_cnt = 0
+    fail_cases = []
+
+    print('ISA Test:')
+    for f in os.listdir('./test_program/isa'):
+        path = os.path.join('./test_program/isa', f)
+        if ('rv64' in f) and os.path.isfile(path):
+            print(path)
+            ret = run_single_elf(path, timeout_s, noisy, cosim, False)
+            if ret != RET_SETUP_ERR:
+                total_cnt += 1
+                if ret == RET_OK:
+                    pass_cnt += 1
+                else:
+                    fail_cnt += 1
+                    fail_cases.append(path)
+    print('Talon:')
+    if not os.path.exists('../../tool/talon/test.elf'):
+        print("please build talon first!")
+    else:
+        ret = run_single_elf('../../tool/talon/test.elf', timeout_s, noisy, cosim, False)
+        if ret != RET_SETUP_ERR:
+            total_cnt += 1
+            if ret == RET_OK:
+                pass_cnt += 1
+            else:
+                fail_cnt += 1
+                fail_cases.append('../../tool/talon/test.elf')
+
+    print('\n Total cases: %d Pass: %d Fail: %d Pass rate: %0.2f%%' % (total_cnt, pass_cnt, fail_cnt, pass_cnt/total_cnt*100))
+    print('Fail cases:')
+    for _ in fail_cases:
+        print(_)
+
+if __name__ == '__main__':
+    try:
+        options, args = getopt.getopt(sys.argv[1:], "he:E:Rrn", ['help'])
+        cosim = not any('-n' in options[i][0] for i in range(len(options)))
+        for name, value in options:
+            if name in ('-h', '--help'):
+                usage()
+            elif name in ('-e'):
+                run_single_elf(value, 0, False, cosim, False)
+            elif name in ('-E'):
+                run_single_elf(value, 0, True, cosim, True)
+            elif name in ('-R'):
+                regression(TIMEOUT, True, cosim)
+            elif name in ('-r'):
+                regression(TIMEOUT, False, cosim)
+    except getopt.GetoptError:
+        usage()
+

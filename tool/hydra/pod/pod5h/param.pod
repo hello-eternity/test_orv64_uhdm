@@ -1,0 +1,163 @@
+=head1 NAME
+
+param - params, param file, and control file
+
+=head1 DESCRIPTION
+
+Params control how Hydra Setup generates flows. They are stored in one or more param files and the control file.
+
+=over
+
+=item B<Params>
+
+All params are defined with this syntax:
+ I<param_name> = I<param_value>
+
+The param name typically describes its function and contains a prefix referencing the flow that uses it. Params control things like input files, tool settings, and command options. Param values are often substituted literally into the tool script, but will sometimes control how scripts are generated. Many params are optional, but some may already have a value of "B<< <required> >>". This indicates that the value is mandatory for this param.
+
+Linebreaks may used in the value using the backslash (\) character. In some cases, the backslash will be removed to adhere to the tool's script syntax.
+
+Some special "global" params can be nested inside the value of other params. This is done using angle brackets (<>). Only certain params have this function, listed below:
+ GLOBAL_design
+
+All params have a manpage that will list what flows it appears in and a description, if available. Do "hydra help I<param_name>" to see it.
+
+=item B<Param Keys>
+
+Some params may be defined with dictionary keys if more data is needed than the param value can provide. Param keys are defined with this syntax:
+  I<param_name>(I<param_key>) = I<param_value>
+
+Some params may required multiple param keys:
+  I<param_name>(I<param_key1>)(I<param_key2>) = I<param_value>
+
+A set of (one or more) unique, ordered keys for a param is called a keyset.
+
+Keys can represent things like scenarios, iterations, signals, or tool settings. In most cases, keys are order dependent. Refer to the flow documentation ("hydra help I<flow_name>") or param documentation ("hydra help I<param_name>") for more information on how a particular param uses keys.
+
+Typically, a param with keys will override the same param without keys.
+
+Keysets for a param across different hierarchies (e.g. a keyset for a param in the param file vs a keyset for the same param in the control file) are additive. For instance, if you have a param file with SCENARIO(func) defined and a control file with SCENARIO(scan), both func and scan are added to the list of defined keys for SCENARIO. Param value overridding works normally when the keys are identical. For instance, if you have "SCENARIO(func) = pnr" the param file and "SCENARIO(func) = sta" in the control file, then the value "sta" in the control file overrides the value "pnr" in the param file.
+
+=item B<Param File>
+
+The param file is a global default and will contain all available params for your set of tools. The entire project should use only one set of param files. Params may be split across multiple param files; this is useful for separating library lists which are typically very long and cumbersome to sift through.
+
+The function B<init_param_files> should be used at the beginning of a project to generate an initial param file, which will contain all available params with default values.
+
+=item B<Control File>
+
+The control file is a local override to the param file and should be created per block. Only one control file may be used. Any params defined here will override the same param in the param file. Use this for data/inputs that is specific to your block.
+
+Control files contain regular params, run definitions, and eco definitions.
+
+=item B<Run Definition>
+
+Run definitions describe the workflow that you wish to generate. They are defined with the syntax:
+ START I<run_name>
+   ...I<params>
+ END
+
+The I<run_name> will be the name of the top level directory that is generated. It is typically used to name a strategy/trial and so should be descriptive. Instead of "run01", do "final_rtl_incr_chan_width".
+
+Run definitions contain regular params, and one special param called "FLOW". The value of "FLOW" is a space-delimited list of the flows that will be generated. Try "hydra help" to see a list of all available flows.
+ FLOW = SYNTH PNR STA
+
+=item B<Eco Definition>
+
+Eco definitions are defined within a run definition. They are used to generate sub-runs that track eco changes that are based off a single run. Each eco is generated as a separate sub-directory within the run directory. Eco definitions have all the same contents as a run definition and can generate all the same flows using the special param "FLOW". They will also inherit params from the run definition.
+
+Some flows may only be defined in an eco. You can check which ones have this restriction with "hydra help".
+
+The eco name MUST follow the naming convention below. Every eco defined MUST also be numbered consecutively, starting with "01". If the run was previously generated, then the previously generated ecos will also be counted even if they do not exist in the control file.
+ eco01_description
+
+An eco can be defined within a run as follows:
+ RUN I<run_name>
+   FLOW = PNR
+   ...I<params>
+
+     ECO I<eco_name>
+       FLOW = ECO
+       ...I<params>
+     ECOEND
+ END
+
+The run definition may have a special param "ECO_only". Setting this to "on" will cause Hydra to generate only eco flows. Use this to keep your standard flow untouched when doing eco flows.
+
+The special param "ECO_runs" may also be used to limit which eco's are generated. If there is at least one listed eco, then only the listed eco's are generated. If not, then all eco's are generated.
+
+=item B<Param Hierarchy>
+
+There are eight total levels of param hierarchy where higher levels override values defined in lower levels. Use this property to have a global default that can then be overridden for individual blocks.
+
+The complete hierarchy is:
+ 1. B<Global Params>           in param file
+ 2. B<Global Param with Keys>  in param file
+ 3. B<Control Params>          in control file, outside START definition
+ 4. B<Control Param with Keys> in control file, outside START definition
+ 5. B<Run Params>              in control file, inside START definition
+ 6. B<Run Param with Keys>     in control file, inside START definition
+ 7. B<Eco Params>              in control file, inside ECO definition
+ 8. B<Eco Params with Keys>    in control file, inside ECO definition
+
+=item B<Special Params>
+
+Some params are used in different ways across many flows.
+
+HYDRA params are used to define what tool will be used or the tool binary path. This will directly affect what flow will be generated, as they are different across tools even for the same flow type.
+
+Params with the prefix "PNR_" may be used across one or more flows. The PNR flow is a wrapper that will call multiple other flows (INIT_DESIGN, FLOORPLAN, etc). You can see what subflows are called with "hydra help PNR". Other params with differing prefixes may also be used in other flows if they are relevant.
+
+The SCENARIO param is used across many flows. It requires four keys: mode, corner, temperature, and RC corner. The value is a space-delimited list with each entry referring to a flow that the scenario is valid for. Some flows will only use a subset of the available keys (e.g. SYNTH will only care about corner and temperature for selecting the library corner to use); for these flows, just select one scenario that contains the desired keys and Hydra will ignore the rest. For more information on how specific flows use the SCENARIO param, do "hydra help I<flow_name>" or "hydra help SCENARIO".
+ SCENARIO(func)(ssg0p81v)(m40c)(cbest) = pnr_slow synth power
+
+LIB and DB params contain liberty and db files. These required two keys: corner and temperature. These should typically, when appended together, match the "operating conditions" name found inside the library file (this only really matters for icc2 PNR, where the operating condition name must be provided). Be sure that the keys match those found in SCENARIO. The LIB and DB list are also separated into macro and std; they are appended into a single list during flow generation but are separated in the param file for organization.
+ LIB_macro_list(ssg0p81v)(m40c) = I<list_of_libs>
+
+Many flows have a "source_catchall_global" and "source_catchall_local" param. These are used to source in miscellaneous scripts. There are separate global and local params because the scripts are meant to be additive (rather than overridden as is normal behavior).
+
+The "ECO_only" param, when set to "on", will skip all non-eco flows. Use this to keep your standard flow untouched when doing eco flows.
+
+The "ECO_runs" param may be used to limit which eco's are generated. If there is at least one listed eco, then only the listed eco's are generated. If not, then all eco's are generated.
+
+
+=back
+
+=head1 EXAMPLE
+
+=over
+
+=item B<1. A single param and value>
+
+ SYNTH_dont_use_script = ./dont_use.tsmc28hpc.tcl
+
+=item B<2. A single param with no value>
+
+ SYNTH_sdc =
+
+=item B<3. A single param containing a value with linebreaks>
+
+ LEC_source_catchall_global = ./black_box.tcl \
+                              ./ignore.tcl \
+                              ./report.tcl
+
+=item B<< 4. A single param with the <required> tag, indicating a mandatory value. >>
+
+ INIT_DESIGN_verilog = <required>
+
+=item B<5. A single param referencing a global param. The value of GLOBAL_design gets substituted into the value of STA_verilog>
+
+ STA_verilog = ./<GLOBAL_design>.v
+
+=item B<6. A run definition (inside the control file) that will generate two flows: PNR and STA. The verilog file is specified for both flows, and will override the same params if they appear in the param file. All other required params will be taken from the param file.>
+
+ START final_rtl
+   FLOW = PNR STA
+
+   PNR_verilog = ./vcore.synth.v
+   STA_verilog = ./vcore.pnr.v
+ END
+
+=back
+
+=head1 SEE ALSO

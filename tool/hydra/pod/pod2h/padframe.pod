@@ -1,0 +1,39 @@
+=head1 NAME
+
+padframe - generates a pad cell placement script
+
+=head1 SYNOPSIS
+
+hydra.pl padframe B<-id_csv> I<FILE>
+
+=head1 DESCRIPTION
+
+This script reads a list of pads from a csv spreadsheet and generates a script that will create pad instances (if they are physical) and place them. The spreadsheet is the same file used in the function B<bump_map>. The first row is assumed to be a header and skipped. It must include these columns, in order:
+
+ ID          - A pad ID with no whitespace starting with "T", "B", "L", or "R".
+ Signal      - The signal name connected to the corresponding bump for this pad. Not used in this script.
+ Instance    - The instance name of the pad.
+ Cell        - The cell type of the pad.
+ Orientation - The desired orientation of the pad.
+ Width       - The width of the pad in microns.
+ X           - The desired lower left X coordinate of the pad.
+ Y           - The desired lower left Y coordinate of the pad.
+ Phys?       - Whether the pad is physical or logical. "Y" for physical, "N" for logical. If the pad is physical, then the name in the "Instance" column is considered a base name upon which the cell type and a unique number will be appended to form an instance name, and a command will be added to create the instance. If the pad is logical, then name in the "Instance" column will be used as-is and should refer to an already created instance.
+
+Any row with an empty ID column will be skipped.
+
+=head1 OPTIONS
+
+=over
+
+=item B<-id_csv>
+
+A csv file containing a mapping of ID names to pad names as well as coordinate locations for each pad.
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO
+
+bump_map

@@ -1,0 +1,364 @@
+=head1 NAME
+
+Connect Interface - generate a top-level RTL verilog file that connects submodules
+
+=head1 SYNOPSIS
+
+hydra.pl connect_interface B<-config> I<FILE> [B<-flist> I<FILE>] [B<-top_name> I<NAME>] [B<-vlg_files> I<FILES>...] [B<-waive_width> on] [B<-disable_ifdef_skip_modules> I<MODULE>...]
+
+=head1 DESCRIPTION
+
+Creating a top level module manually can mean writing thousands of lines of RTL (example: 1500+ lines for pygmy_es1), hours of simple, but tedious, work, and will be prone to human error. Through the use of Hydra's scripting abilities, we're able to automate most of this process, and it requires designers to write a fraction of the amount of code had they written the top level by hand. The Hydra script will do the following:
+
+ 1. Instantiate all submodules
+ 2. Instantiate signals to connect to submodule ports
+ 3. Define top level module and its ports
+ 4. Connect submodule port signals to other submodule ports and/or to top level ports
+
+A configuration file is used to describe the top level as follows:
+
+=over
+
+=item B<Instantiating Submodules>
+
+Submodules are instantiated using the following syntax:
+ (module name): (comma separated list of module instances)
+
+Example: Single module instance. This will generate an instance of the ORV module, named mp_u.
+ orv: mp_u
+
+
+Example: Multiple module instances. This will generate 3 instances of the oursring_station module, named dma_station_u, l2_flush_station_u, and vc0_station_u.
+ oursring_station: dma_station_u, l2_flush_station_u, vc0_station_u
+
+When a submodule is instantiated, for each port of that submodule, a corresponding signal is instantiated for it in the top level. This signal is automatically connected to the port and is used for making connections.
+
+For example, the oursring_station submodule has these ports defined:
+ module oursring_station (
+ ...
+   input oursring_resp_if_b_t i_resp_local_if_b,
+   input oursring_resp_if_r_t i_resp_local_if_r,
+   input logic i_resp_local_if_rvalid,
+   output logic i_resp_local_if_rready,
+   input logic i_resp_local_if_bvalid,
+   output logic i_resp_local_if_bready,
+ ...);
+
+When we instantiate dma_station_u, these signals will also be declared:
+ ...
+   oursring_resp_if_b_t   dma_station_u__i_resp_local_if_b;
+   wire                   dma_station_u__i_resp_local_if_bready;
+   wire                   dma_station_u__i_resp_local_if_bvalid;
+   oursring_resp_if_r_t   dma_station_u__i_resp_local_if_r;
+   wire                   dma_station_u__i_resp_local_if_rready;
+   wire                   dma_station_u__i_resp_local_if_rvalid;
+ ...
+
+And these signals will be connected to the ports:
+ oursring_station dma_station_u(
+ ...
+   .i_resp_local_if_b(dma_station_u__i_resp_local_if_b),
+   .i_resp_local_if_bready(dma_station_u__i_resp_local_if_bready),
+   .i_resp_local_if_bvalid(dma_station_u__i_resp_local_if_bvalid),
+   .i_resp_local_if_r(dma_station_u__i_resp_local_if_r),
+   .i_resp_local_if_rready(dma_station_u__i_resp_local_if_rready),
+   .i_resp_local_if_rvalid(dma_station_u__i_resp_local_if_rvalid),
+ ...
+ );
+
+=item B<Importing Packages>
+
+Packages can be imported in your generated top level by directly copying the same import syntax from Verilog into your config file.
+ import (package_name)::*;
+
+Example:
+ import pygmy_cfg::*;
+
+=item B<Connecting Struct Interfaces>
+
+Entire struct interfaces (see bottom of page for explanation on this) can be connected to each other through the following syntax
+ (module instance 1).(struct interface port name) (module instance 2).(struct interface port name)
+
+Example: mp_station_u and dma_station_u are both module instances of the oursring_station module. This line:
+ dma_station_u.o_resp_ring_if            mp_station_u.i_resp_ring_if
+
+will expand to the assignment statements below
+ // dma_station_u.o_resp_ring_if <-> mp_station_u.i_resp_ring_if
+ assign dma_station_u__o_resp_ring_if_bready        = mp_station_u__i_resp_ring_if_bready;
+ assign dma_station_u__o_resp_ring_if_rready        = mp_station_u__i_resp_ring_if_rready;
+ assign mp_station_u__i_resp_ring_if_b              = dma_station_u__o_resp_ring_if_b;
+ assign mp_station_u__i_resp_ring_if_bvalid         = dma_station_u__o_resp_ring_if_bvalid;
+ assign mp_station_u__i_resp_ring_if_r              = dma_station_u__o_resp_ring_if_r;
+ assign mp_station_u__i_resp_ring_if_rvalid         = dma_station_u__o_resp_ring_if_rvalid;
+
+If Hydra is unable to connect the signals because of a port direction mismatch, an error will be flagged to the user.
+
+=item B<Connecting Non-Struct Interface Signals>
+
+Individual signals, or signals that are not part of a struct interface group, can be connected in the following way:
+ (module instance 1)/(port name) (module instance 2)/(port name)
+
+For example, this config command:
+ pll_u/clk_out   mp_u/clk
+
+will generate this assign statement:
+ assign mp_u__clk                               = pll_u__clk_out;
+
+=item B<Creating/Connecting Top Level Ports>
+
+Top level ports are generated and connected using either connection syntax as above. This requires top level ports to be connected and the cannot be left floating.
+ port (top level port name) (submodule instance name)/(port name)
+ port (top level struct interface port name) (submodule instance name).(struct interface port name)
+
+=item B<Connecting Literal Signals>
+
+Top level ports, interfaces, and individual signals can be connected to literals in the following way:
+  (module instance 1).(struct interface port name) (literal)
+  (module instance 1)/(port_name) (literal)
+  port (top level port name) (literal)
+
+For example, this config command for an individual signal:
+  pll_u/clk_out 'b0
+
+will generate this assign statement:
+  assign pll_u__clk_out  =  'b0
+
+
+Another example, now with an interface:
+ dma_station_u.o_resp_ring_if    'b0
+
+will expand to the assignment statements below
+ // dma_station_u.o_resp_ring_if <-> mp_station_u.i_resp_ring_if
+ assign dma_station_u__o_resp_ring_if_bready        = 'b0;
+ assign dma_station_u__o_resp_ring_if_rready        = 'b0;
+
+
+Any port/signal that is not input or inout will be skipped and will generate a non-fatal warning.
+
+Top level port literals must be sized, whereas interface and individual signals must be unsized.
+
+=item B<Specifying Instance Parameters>
+
+Instance parameters can be specified in the submodule instantiation statement. The script will resolve these parameters only for the given instance. The parameter list should be semi-colon (;) delimited with an equals sign (=) separating the parameter name and value.
+
+Example: Two module instances; one with two parameters and one with one parameter.
+ l2_mem_noc : mem_noc_u1(NUM_MASTERS=5;NUM_SLAVES=2), mem_noc_u2(NUM_MASTERS=2)
+
+=item B<Specifying Non-Prefixed Interface Ports>
+
+Interface ports that are correctly prefixed can be connected to non-prefixed ports by using the special asterisk (*) character when specifying interface connections. Instances with non-prefixed interface ports MUST be specified on the statement's right side (normally the side does not matter when connecting interfaces). The script will search for the right side instance's non-prefixed ports based on the left side's prefixed ports with the prefix stripped.
+
+Example: The instance slow_io_apb_bridge_u will have its interface s0_cdc_apb to the non-prefixed ports belonging to instance spim_u.
+ slow_io_apb_bridge_u.s0_cdc_apb     spim_u.*
+
+This will expand to the following. The five prefixed ports from slow_io_apb_bridge_u are referenced and matching non-prefixed ports are found in spim_i.
+ // slow_io_apb_bridge_u.s0_cdc_apb <-> spim_u.*
+ assign spim_u__paddr         = slow_io_apb_bridge_u__s0_cdc_apb_paddr;
+ assign spim_u__penable       = slow_io_apb_bridge_u__s0_cdc_apb_penable;
+ assign spim_u__psel          = slow_io_apb_bridge_u__s0_cdc_apb_psel;
+ assign spim_u__pwdata        = slow_io_apb_bridge_u__s0_cdc_apb_pwdata;
+ assign spim_u__pwrite        = slow_io_apb_bridge_u__s0_cdc_apb_pwrite;
+
+=item B<Specifying Ifdef Wrapped Connections>
+
+Any connection can be wrapped in an ifdef/ifndef. Wrap an ifdef/ifndef and endif around any connection statement to wrap all its associated assign statements. Top level wires will still be connected. The one exception is for top ports connected to inout-direction module ports; since these connections are made directly without assign statements, they cannot be ifdef/ifndef wrapped.
+
+Multiple ifdef/ifndef statements can be listed on one line if multiple constraints are needed.
+
+In the output code, new intermediary defines will be generated for each ifdef/ifndef. This is so that a single ifdef can be used in the code body instead of multiple nested ifdefs.
+
+Else statements are also supported. This will be manifested as an ifndef on the intermediary define.
+
+When wrapping top level ports in ifdefs, the port declaration will also be ifdef'd as long as all connections for that port are ifdef'd. If there is at least one port connection that is not ifdef'd, then the declaration for that port will not be ifdef'd. Top level ports may only have one associated ifdef across all its connections, as having more than one would introduce ambiguity in the ifdef for the port declaration.
+
+Example: All ports connected between these interfaces will be wrapped in an ifdef for an intermediary define (IFDEF_SYNTHESIS__IFNDEF_FPGA) for SYNTHESIS and FPGA. The else statement uses an ifndef for the intermediary define.
+ ifdef SYNTHESIS ifndef FPGA
+ pll_station_u.o_req_local_if        byp_station_u.i_req_ring_if
+ else
+ pll_station_u/o_req_ready           byp_station_u/i_req_ready
+ endif
+
+This will result in the following code:
+ `ifdef SYNTHESIS
+   `ifndef FPGA
+     `define IFDEF_SYNTHESIS__IFNDEF_FPGA
+   `endif
+ `endif
+
+ `ifdef IFDEF_SYNTHESIS__IFNDEF_FPGA
+ // pll_station_u.o_req_local_if <-> byp_station_u.i_req_ring_if
+ assign byp_station_u__i_req_ring_if_ar                      = pll_station_u__o_req_local_if_ar;
+ assign byp_station_u__i_req_ring_if_arvalid                 = pll_station_u__o_req_local_if_arvalid;
+ assign byp_station_u__i_req_ring_if_aw                      = pll_station_u__o_req_local_if_aw;
+ assign byp_station_u__i_req_ring_if_awvalid                 = pll_station_u__o_req_local_if_awvalid;
+ assign byp_station_u__i_req_ring_if_w                       = pll_station_u__o_req_local_if_w;
+ assign byp_station_u__i_req_ring_if_wvalid                  = pll_station_u__o_req_local_if_wvalid;
+ assign pll_station_u__o_req_local_if_arready                = byp_station_u__i_req_ring_if_arready;
+ assign pll_station_u__o_req_local_if_awready                = byp_station_u__i_req_ring_if_awready;
+ assign pll_station_u__o_req_local_if_wready                 = byp_station_u__i_req_ring_if_wready;
+ `endif
+
+ `ifndef IFDEF_SYNTHESIS__IFNDEF_FPGA
+ // pll_station_u/o_req_ready <-> byp_station_u/i_req_ready
+ assign pll_station_u__o_req_ready                           = byp_station_u__i_req_ready;
+ `endif
+
+=item B<Specifying Ifdef Wrapped Instances>
+
+Instances can be wrapped in an ifdef/ifndef. If an instance is wrapped, then its instantiation, all its top level wire declarations, and all its connections are also wrapped.
+
+Example: Two instances are declared with one wrapped in an ifdef for the variable SYNTHESIS.
+ rstn_sync : ddr_hs_rstn_sync_u(DIV=4) ifdef SYNTHESIS, ddr_ls_rstn_sync_u
+
+=item B<Specifying Unconnected Top Ports>
+
+Top level ports can be specified without a connection. Instead of the "port" keyword, use the desired direction "input", "output", or "inout". Also include any data types or buses as desired.
+
+Example: A top level input port with a 4 bit bus.
+ input [3:0] p2c_spim_i
+
+=item B<Specifying Explicit Top Level Wires>
+
+Explicit top level wires can be created. These will be categorized under an imaginary module with the same name as the top level (given by B<-top_name>). The wire can be referred to for connection by using the top name as the containing module. They are available for any type of connection, but cannot be the sole connection to a port because direction cannot be inferred from the wire.
+
+Example: Creating a top level wire and connecting it to a module port. The top name here is assumed to be "soc_top".
+ var wire clk
+ soc_top/clk    pll_rstn_sync_u/divclk
+
+=item B<Specifying Signal-to-Interface Connections>
+
+An individual signal can be connected to an interface. Every port in the interface will be connected to the individual signal. Non-prefixed interface ports (interfaces specified with *) are not supported.
+
+Example: The individual signal or_awvalid will be connected to the two ports in the c0_sys_clk interface.
+ xilinx_ddr_u.c0_sys_clk    xilinx_dma_pcie_ep_u/or_awvalid
+
+This will result in the following assign statements:
+ // xilinx_ddr_u.c0_sys_clk <-> xilinx_dma_pcie_ep_u/or_awvalid
+ assign xilinx_ddr_u__c0_sys_clk_n   = xilinx_dma_pcie_ep_u__or_awvalid;
+ assign xilinx_ddr_u__c0_sys_clk_p   = xilinx_dma_pcie_ep_u__or_awvalid;
+
+=item B<Specifying Interface Exceptions>
+
+Individual ports can be excluded from interface connections with the "except" keyword. Add the except keyword at the end of any statement with a reference to an interface along with the port names that you wish to exclude. The port name should be the "base" name that does not include the interface name.
+
+Example: This will connect to the two interfaces, excluding the bwadj and bypass pins.
+ pll_station_u.out_func    pll_u.func  except bwadj bypass
+
+This results in the following. Note the absence of the bwadj and bypass pins.
+  // pll_station_u.out_func <-> pll_u.func
+  assign pll_u__func_clk_sel              = pll_station_u__out_func_clk_sel;
+  assign pll_u__func_clkf                 = pll_station_u__out_func_clkf;
+  assign pll_u__func_clkod                = pll_station_u__out_func_clkod;
+  assign pll_u__func_clkr                 = pll_station_u__out_func_clkr;
+  assign pll_u__func_intfb                = pll_station_u__out_func_intfb;
+  assign pll_u__func_prog_done            = pll_station_u__out_func_prog_done;
+  assign pll_u__func_pwrdn                = pll_station_u__out_func_pwrdn;
+  assign pll_u__func_reset                = pll_station_u__out_func_reset;
+  assign pll_u__func_test                 = pll_station_u__out_func_test;
+
+=item B<Specifying Multiple Instances with Bracket Expansion>
+
+When making interface or signal connections, multiple instances can be specified in one statement with bracket expansion. Only one bracket expansion is allowed per instance per statement. Use commas (no whitespace) to delimit each token. For every token, a new connection will be made with that token substituted into the instance name.
+
+If both source and destination instances have bracket expansion, only the corresponding index of each will be connected. If only one instance has bracket expansion, then the instance without will be duplicated for every token.
+
+Example 1:
+  vp[0,1,2]_station_u.i_req_local_if   vp0_u.sysbus_req_if
+
+This will result in the equivalent of three statements:
+  vp0_station_u.i_req_local_if   vp0_u.sysbus_req_if
+  vp1_station_u.i_req_local_if   vp0_u.sysbus_req_if
+  vp2_station_u.i_req_local_if   vp0_u.sysbus_req_if
+
+Example 2:
+  vp[0,1,2]_station_u.i_req_local_if   vp[2,1,0]_u.sysbus_req_if
+
+This still results in the equivalent of three statements, with each token only connecting to the same opposing index (0 connects to 2, 1 connects to 1, 2 connects to 0):
+  vp0_station_u.i_req_local_if   vp2_u.sysbus_req_if
+  vp1_station_u.i_req_local_if   vp1_u.sysbus_req_if
+  vp2_station_u.i_req_local_if   vp0_u.sysbus_req_if
+
+=item B<Specifying Suffixed Interface Ports>
+
+Interface ports that are suffixed can be connected to non-suffixed ports by using a second dot (.) character when specifying interface connections.
+
+Example: The instance slow_io_apb_bridge has an interface s0_cdc_apb; that is, it has a number of ports that prefixed with "s0_cdc_apb_". These ports also each have a suffix of "_s1". The instance spim_u also has these ports, but with no suffix.
+ slow_io_apb_bridge_u.s0_cdc_apb.s1     spim_u.s0_cdc_apb
+
+This will expand to the following.
+ assign spim_u__paddr         = slow_io_apb_bridge_u__s0_cdc_apb_paddr_s1;
+ assign spim_u__penable       = slow_io_apb_bridge_u__s0_cdc_apb_penable_s1;
+ assign spim_u__psel          = slow_io_apb_bridge_u__s0_cdc_apb_psel_s1;
+ assign spim_u__pwdata        = slow_io_apb_bridge_u__s0_cdc_apb_pwdata_s1;
+ assign spim_u__pwrite        = slow_io_apb_bridge_u__s0_cdc_apb_pwrite_s1;
+
+=back
+
+=head1 EXTRA READING
+
+=over
+
+=item B<Struct Interfaces>
+
+As per OURS coding guidelines, System Verilog interfaces should not be used in any RTL meant for synthesis. Instead, we should use struct interfaces, or a group of signals that are the result of expanding System Verilog interfaces.
+
+For example, the oursring_resp_if is currently defined as:
+ interface oursring_resp_if (input clk, rstn);
+   logic rvalid;
+   logic rready;
+   logic bvalid;
+   logic bready;
+   oursring_resp_if_b_t b;
+   oursring_resp_if_r_t r;
+ endinterface
+
+RTL should not use this interface directly, but should instead use these group of signals:
+ logic rvalid;
+ logic rready;
+ logic bvalid;
+ logic bready;
+ oursring_resp_if_b_t b;
+ oursring_resp_if_r_t r;
+
+=item B<Script Limitations>
+
+The Hydra script has the following limitations:
+
+1. System verilog interfaces cannot be connected.
+2. No logic will be contained in the top level module. The top level module will only contain submodules and signal connections. Any logic needed by the generated top level module will need to be contained in an instantiated submodule.
+
+=back
+
+=head1 OPTIONS
+
+=over
+
+=item -config
+
+A configuration file containing how submodules should be connected.
+
+=item -flist
+
+A file list containing RTL files. Optional. Either this or B<-vlg_files> should be specified.
+
+=item -top_name
+
+The name of the top module to be generated. Optional.
+
+=item -vlg_files
+
+A list of RTL files. Optional. Either this of B<-flist> should be specified.
+
+=item -waive_width
+
+Specifying this option with the value "on" will downgrade mismatching width errors to a warning. Optional.
+
+=item -disable_ifdef_skip_modules
+
+Normally, all ifdef blocks will be skipped when reading verilog modules. If a module is added to this list, all ifdef blocks will be read for that module. Optional.
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO

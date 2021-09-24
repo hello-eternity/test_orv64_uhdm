@@ -1,0 +1,493 @@
+-add_directives : (null)
+-aw_dirs : (null)
+-bcm : (null)
+-pipereg_unbundling : false
+-effort : (null)
+-elaborate_legacy_clock_gating : false
+-elaborate_optimize_register_fanin : false
+-elaborate_opt_unused_logic : true
+-disable_register_slicing : true
+-use_aoi21_compound_gates : false
+-dont_use_aoi21_compound_gates : false
+-dont_use_compound_gates : false
+-use_compound_gates : false
+-preserve_constant_enabled_gaters : false
+-blackbox : (null)
+-blast_regfile : (null)
+-bundle_register : false
+-case_sensitive : false
+-case_insensitive : false
+-compile_script : /work/home/qhzhou/rrv64_repo_clean/hardware/soc/pa/pa_shell_work/pa_shell.compile_script
+-coverage_mode : 0
+-clk_gate_depth : 9
+-dblib : /work/tech/GF22FDX/LIB/DesignWare_logic_libs/globalfoundaries22nhsda/24hd/edl/lvt/4.00a/liberty/ecsm/gf22nsdllogl24edl116a_TT_0P65V_0P00V_0P00V_M0P20V_25C.db
+-dblib : /work/tech/GF22FDX/LIB/DesignWare_logic_libs/globalfoundaries22nhsda/36hd/edl/ulvt/4.00a/liberty/ccs/gf22nsdvlogl36edl116a_TT_0P65V_0P00V_0P00V_M0P20V_25C.db
+-dblib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_S1DU_BFUG_W01024B256M04C128_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.db
+-dblib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_S1DU_BFUG_W08192B032M04C256_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.db
+-dblib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_S1DU_BFUG_W16384B032M08C256_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.db
+-dblib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_S1DU_BFUG_W00128B024M08C128_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.db
+-dblib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_S1DU_BFUG_W00128B256M04C128_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.db
+-dblib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_S1DU_BFUG_W01024B080M08C128_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.db
+-dblib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_S1DU_BFUG_W02048B032M04C128_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.db
+-dblib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_R1PU_WFUG_W00128B024M02C256_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.db
+-dblib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_R1PU_WFUG_W00128B024M04C256_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.db
+-dblib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_R1PU_WFUG_W00128B064M02C256_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.db
+-dblib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_R1PU_WFUG_W00128B064M04C256_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.db
+-dblib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_R1PU_WFUG_W01024B032M04C256_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.db
+-dblib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_R1PU_WFUG_W01024B064M04C256_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.db
+-dblib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_R1PU_WFUG_W01024B080M04C256_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.db
+-dw_synthesis_options_file : (null)
+-dw_synthesized_dir_path : (null)
+-dw_write_dir : (null)
+-enable_dw_synthesis : true
+-disable_escaped_names_flow : false
+-explorer_scn : false
+-f : (null)
+-flatten_divider : false
+-gld : false
+-gld_file : pthdl.gld
+-ignore_translate_off : false
+-ignore_translate_off_files : (null)
+-ignore_directives : (null)
+-keep_reg : false
+-mixed_design_case_sensitive : false
+-no_macro_level_naming : false
+-no_mux_nto1_optimization : false
+-no_lut_decoder_optimization : false
+-elaborate_case : (null)
+-elaborate_const_opt_mods : (null)
+-elaborate_precompile : false
+-elaborate_preserve_constant_nets : false
+-relax_syntax_check : true
+-elaborate_skip_modules : (null)
+-elaborate_ungroup_modules : (null)
+-elaborate_skip_module_insts : (null)
+-rpt : Elaborate.rpt
+-r : optimization
+-rtl_max_stack_depth : 0
+-elaborate_optimize_cascaded_muxes : false
+-elaborate_infer_multi_port_ram : false
+-elaborate_optimize_modules : (null)
+-file_extension : (null)
+-list_required_traces : (null)
+-lower_case_vhdl : false
+-macros : (null)
+-max_startup_limit : 0
+-minimize_expr : false
+-min_regfile_bit_count : 32
+-min_regfile_bit_count_for_message : 2048
+-min_regfile_word_length : 3
+-min_regfile_word_count : 8
+-no_default_macros : false
+-replace_macros : false
+-no_verilog_2001 : false
+-o : (null)
+-param_map : (null)
+-preserve_regfile : (null)
+-system_verilog : true
+-appg : false
+-tag_blocks : false
+-elaborate_tic_tic_discards_whitespace : false
+-elaborate_auto_black_box : true
+-elaborate_constant_propagation : false
+-elaborate_hier_constant_propagation : false
+-tcl : (null)
+-tmpdir_scn : (null)
+-top : orv64
+-use_vectored_combo_gates : false
+-verilog_2001 : false
+-write_pdb : true
+-wrk : (null)
+-wwverilog_ops : false
+-key_dir : (null)
+-system_verilog_2005 : false
+-system_verilog_2009 : false
+-module_priority_files : (null)
+-elaborate_summary_report : (null)
+-elaborate_prioritize_lib_pin : false
+-elaborate_incdir_search_src : false
+-elaborate_extract_enable_for_nested_conditions : false
+-elaborate_incr_clock_gate_recursion_depth : false
+-elaborate_infer_dual_port_for_multi_port_ram : false
+-elaborate_defer_semantic_check_messages : (null)
+-ignore_verilog_macros : (null)
+-defer_black_box_inference : false
+-pdb_profile_data : (null)
+-x : (null)
+-log : (null)
+-a : (null)
+-alf : (null)
+-arc_based_estimation : false
+-auto : .
+-check_synlib_semantics : false
+-composite_scn : false
+-continue : false
+-critical_msgs : 1269
+-critical_msgs : 1371
+-critical_msgs : 1409
+-critical_msgs : 1425
+-critical_msgs : 1447
+-critical_msgs : 1588
+-critical_msgs : 2034
+-critical_msgs : 2089
+-critical_msgs : 2176
+-critical_msgs : 2221
+-critical_msgs : 2818
+-critical_msgs : 2859
+-critical_msgs : 2888
+-critical_msgs : 2922
+-critical_msgs : 3331
+-critical_msgs : 3332
+-critical_msgs : 3344
+-critical_msgs : 5196
+-critical_msgs : 5550
+-critical_msgs : 5551
+-critical_msgs : 5552
+-critical_msgs : 8309
+-critical_msgs : 8312
+-critical_msgs : 8361
+-critical_msgs : 8517
+-critical_msgs : 8523
+-critical_msgs : 8743
+-critical_msgs : 8754
+-critical_msgs : 8811
+-critical_msgs : 8815
+-critical_msgs : 8817
+-critical_msgs : 8822
+-critical_msgs : 8823
+-critical_msgs : 8849
+-critical_msgs : 9003
+-critical_msgs : 9107
+-critical_msgs : 9576
+-critical_msgs : 9899
+-critical_msgs : 9900
+-critical_msgs : 9901
+-critical_msgs : 9902
+-critical_msgs : 9903
+-critical_msgs : 9904
+-critical_msgs : 9905
+-critical_msgs : 9906
+-critical_msgs : 9907
+-critical_msgs : 9916
+-critical_msgs : 9924
+-critical_msgs : 9939
+-critical_msgs : 9940
+-critical_msgs : 9942
+-critical_msgs : 9962
+-critical_msgs : 12010
+-critical_msgs : 14594
+-critical_msgs : 21045
+-critical_msgs : 25255
+-critical_msgs : 25257
+-critical_msgs : 40216
+-critical_msgs : 40261
+-critical_msgs : 40263
+-critical_msgs : 40266
+-critical_msgs : 40270
+-critical_msgs : 40271
+-critical_msgs : 40282
+-critical_msgs : 46120
+-critical_msgs : 90023
+-debug_alf_memory : false
+-decimals : 2
+-editor : (null)
+-force_pin_based : false
+-force_stimulus_processing : true
+-four_byte_alignment : false
+-fsdb_performance_factor : (null)
+-fsdb_use_max_memory : (null)
+-to_fsdb_index : 0
+-g : false
+-gate : false
+-gates : false
+-help : (null)
+-i : (null)
+-ignore_case : false
+-iaf : activities.iaf
+-ix : false
+-iz : false
+-lib_db_dirs : (null)
+-lib_path : (null)
+-lm : (null)
+-lmp : (null)
+-lm_path : (null)
+-m : (null)
+-maxerr : 50
+-malloc_no_mmap : false
+-mixed : false
+-multiple_license_files : false
+-nomaxerr : 1548
+-nomaxerr : 2086
+-nomaxerr : 11018
+-nomaxerr : 11482
+-nomaxerr : 20001
+-nomaxerr : 20009
+-nomaxerr : 20020
+-nomaxerr : 20021
+-noopt : true
+-spoi : true
+-nowarn : (null)
+-p : (null)
+-significant : 3
+-pdb : db/elab.pdb
+-prob : false
+-pin_based_estimation : false
+-reduce_alf_tables : false
+-quiet : false
+-rtlsim2gate : false
+-scn : db/rtl_power.scn
+-categorize_regfile_as_memory : false
+-scn_path : (null)
+-upf : (null)
+-cpf : (null)
+-cpf_out_file : (null)
+-relaxed_upf_checks : false
+-relaxed_upf_tcl_checks : false
+-relaxed_cpf_checks : false
+-sld : (null)
+-synlib : /work/tech/GF22FDX/LIB/DesignWare_logic_libs/globalfoundaries22nhsda/24hd/edl/lvt/4.00a/liberty/ecsm/gf22nsdllogl24edl116a_TT_0P65V_0P00V_0P00V_M0P20V_25C.lib.gz
+-synlib : /work/tech/GF22FDX/LIB/DesignWare_logic_libs/globalfoundaries22nhsda/36hd/edl/ulvt/4.00a/liberty/ccs/gf22nsdvlogl36edl116a_TT_0P65V_0P00V_0P00V_M0P20V_25C.lib.gz
+-synlib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_S1DU_BFUG_W01024B256M04C128_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.lib
+-synlib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_S1DU_BFUG_W08192B032M04C256_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.lib
+-synlib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_S1DU_BFUG_W16384B032M08C256_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.lib
+-synlib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_S1DU_BFUG_W00128B024M08C128_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.lib
+-synlib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_S1DU_BFUG_W00128B256M04C128_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.lib
+-synlib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_S1DU_BFUG_W01024B080M08C128_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.lib
+-synlib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_S1DU_BFUG_W02048B032M04C128_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.lib
+-synlib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_R1PU_WFUG_W00128B024M02C256_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.lib
+-synlib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_R1PU_WFUG_W00128B024M04C256_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.lib
+-synlib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_R1PU_WFUG_W00128B064M02C256_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.lib
+-synlib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_R1PU_WFUG_W00128B064M04C256_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.lib
+-synlib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_R1PU_WFUG_W01024B032M04C256_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.lib
+-synlib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_R1PU_WFUG_W01024B064M04C256_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.lib
+-synlib : /work/tech/GF22FDX/LIB/MEM/MemViews/model/timing/ccs/IN22FDX_R1PU_WFUG_W01024B080M04C256_116cpp_TT_0P650V_0P800V_0P000V_0P000V_025C.lib
+-timer_cell_sel : 0
+-topinst : (null)
+-use_default_activity : false
+-use_fsdb2vcd : false
+-use_library_file_names : false
+-wait : false
+-warn : (null)
+-wlib : (null)
+-enable_alternate_pdb : false
+-wwsim : .
+-x : (null)
+-compress_debug_logs : false
+-work_dir : /work/home/qhzhou/rrv64_repo_clean/hardware/soc/pa/pa_shell_work
+-black_box_instances : (null)
+-block_design_instance : (null)
+-block_design_flow : false
+-wlm_fanout_length_avg_cap : false
+-use_ccs_power_data : false
+-ccs_lib_include_switching_power : false
+-ignore_unrelated_toggles : false
+-internal_load_factor : 1
+-mux_load_factor : 1
+-pessimistic_register_cap : false
+ADS_DISPLAY_INFERRED_NAME : (null) - was deprecated in 14.1.1
+_ADS_GEN_CHECKREWRITE_NETLIST : (null)
+PT_ADD_PORT_TYPE : (null)
+PT_ADD_RELATED_PINS : (null)
+ADS_IGNORE_UNRELATED_TOGGLES : (null) - was deprecated in 14.1.1
+ADS_ECG_TRACE_DEPTH : (null) - was deprecated in 14.1.1
+ADS_ECG_STOP_AT_NAMED_NET : (null) - was deprecated in 14.1.1
+ADS_AP_USE_COMPAT : (null) - was deprecated in 14.1.1
+PT_PACE_SEPARATELY_BUFFER_ICGC : (null)
+ADS_APPLY_SMW : (null) - was deprecated in 14.1.1
+PT_CONST_MUX_OPT : (null)
+ADS_MUX_CONST_INPUT_OPT : (null) - was deprecated in 14.1.1
+_ADS_DONT_PRINT_SUPPLY_POWER : (null)
+_ADS_REGRESSION_ACTIVITY_CYCLE : (null)
+_ADS_USE_OLD_AREA_CALCULATION : (null)
+ADS_PTTB_FAST : (null) - was deprecated in 14.1.1
+_ADS_CACHING_OFF : (null)
+_ADS_MAX_ESPRESSO_BUF_INC : (null)
+_ADS_BA_DEBUG_ON : (null)
+ADS_USE_EFF_PIN_COUNT_DECODER : (null) - was deprecated in 14.1.1
+ADS_USE_EFF_PIN_COUNT_UMUX : (null) - was deprecated in 14.1.1
+ADS_MUX_ACT_BASED : (null) - was deprecated in 14.1.1
+ADS_RELEASE_SCN : (null) - was deprecated in 14.1.1
+_ADS_DEBUG_MACROS : (null)
+ADS_ADDER_NEW_DELTA : (null) - was deprecated in 14.1.1
+ADS_ADDER_NEW_ACT : (null) - was deprecated in 14.1.1
+_ADS_ENABLE_MCTT : (null)
+_ADS_REVERSE_GAF_NDATA : (null)
+ADS_CLK_VECTORLESS : (null) - was deprecated in 14.1.1
+ADS_MAX_STARTUP_LIMIT : (null) - was deprecated in 14.1.1
+_ADS_TB_DELTA : (null)
+ADS_FSDB_SINGLE_SESSION : (null) - was deprecated in 14.1.1
+_ADS_ECG_MAX_BUCKET_SIZE : (null)
+_ADS_ECG_MAX_EFF_VAR_CNT : (null)
+_ADS_ECG_XOR_THRESHOLD : (null)
+_ADS_ECG_NEW_CONTAINMENT : (null)
+_ADS_PRINT_PACE_STAT : (null)
+SDI_PA_POINT_SIZE : (null)
+_ADS_DCS : (null)
+_ADS_EXP : (null)
+_ADS_HN_EXP : (null)
+_ADS_HS_EXP : (null)
+_ADS_L1 : (null)
+_ADS_L2 : (null)
+_ADS_LF_EXP : (null)
+_ADS_LN_EXP : (null)
+_ADS_LS_EXP : (null)
+_ADS_MF_EXP : (null)
+_ADS_MN_EXP : (null)
+_ADS_MS_EXP : (null)
+ADS_USE_LEGACY_ELAB : (null) - was deprecated in 14.1.1
+MONITOR_GATE_PARAMS : (null)
+XOR_FACTOR : (null)
+XOR_LOWER_BOUND : (null)
+XOR_UPPER_BOUND : (null)
+_ADS_PRINT_LOAD : (null)
+_ADS_PRINT_CAP : (null)
+_ADS_RUN_PEAKWATCHER : (null)
+_ADS_HTML_SEQUENTIAL : (null)
+ADS_PACE_CLK_BUF_FUNC : (null) - was deprecated in 14.1.1
+_ADS_REG_TESTING : (null)
+_ADS_RANK_THRESHOLD : (null)
+_ADS_EXCEPTION_DEBUG : (null)
+OLD_REWRITE_STYLE : (null)
+_ADS_DISABLE_ARRAY_REWRITE : (null)
+RPMFILE_READ_FAIL : (null)
+RPMFILE_WRITE_FAIL : (null)
+_ADS_SAIF_DISAPBLE_SDPD : (null)
+_ADS_SAIF_DONT_GEN_ENGVECTOR : (null)
+_ADS_SAIF_PRINT_ALFVEC : (null)
+_ADS_SAIF_USE_ONLY_MVSIS : (null)
+_ADS_RED_DEBUG_HELP : (null)
+_ADS_ODC_DEBUG_CONS_PINS : (null)
+_ADS_ODC_DISABLE_CSE : (null)
+_ADS_ODC_DUMP_EXPR_BUCKETS : (null)
+ADS_ODC_INCLUDE_BASIC_GATES : (null) - was deprecated in 14.1.1
+_ADS_ODC_INCLUDE_CONTROL_PATHS : (null)
+ADS_ODC_MAX_EXPR_LEC : (null) - was deprecated in 14.1.1
+ADS_ODC_MAX_FANOUT : (null) - was deprecated in 14.1.1
+_ADS_ODC_MAX_LEAF_NODES : (null)
+ADS_ODC_MAX_LIT : (null) - was deprecated in 14.1.1
+_ADS_ODC_MAX_VAR : (null)
+_ADS_ODC_PROP_SELECT_LINES : (null)
+_ADS_ODC_REDUCE_HUGE_EXPR : (null)
+_ADS_PACE_LEGACY_INTERPOLATION : (null)
+_ADS_USE_LEGACY_RPT_ARG_FMT : (null)
+ADS_KEEP_SYS_LIMITS : (null) - was deprecated in 14.1.1
+_ADS_REPORT_CPU_TIME : (null)
+_ADS_REPORT_PURE_CPU_USAGE : (null)
+ADS_RUSAGE_CHILDREN : (null)
+SENTE_LIB : (null)
+DCMRULEPATH : (null)
+DCMRULESPATH : (null)
+DCMTABLEPATH : (null)
+_ADS_FSDB_RETRO_MODE : (null)
+_ADS_FORCED_FSDB2VCD : (null)
+_ADS_PRECISION : (null)
+SENTE_UPDATE_LIB : (null)
+POWERARTIST_ROOT : /work/tools/ansys/PowerArtist_linux-x86_64_rhel6_2020R2.3
+_ADS_SHOW_OPT_SECTION : (null)
+_ADS_SHOW_OPT_HIDDEN : (null)
+ADS_PDB_LOCKING_ENABLED : (null) - was deprecated in 14.1.1
+_ADS_DO_NOT_CHECK_CLOCK_DEF : (null)
+_ADS_ENHANCED_X_ALGO : (null)
+_ADS_EXPLORER_SCN : (null)
+_ADS_NO_MESSAGE_SUMMARY : (null)
+_ADS_NO_ENV_LOG : (null)
+ADS_OADB_ARCH : (null) - was deprecated in 14.1.1
+ADS_ENABLE_ALTERNATE_PDB : (null) - was deprecated in 14.1.1
+ADS_ENABLE_PTOA_TRACING : (null) - was deprecated in 14.1.1
+ADS_DISABLE_PTOA_TRACING : (null) - was deprecated in 14.2.1
+ADS_DISABLE_APSH : (null) - was deprecated in 14.1.1
+APSH_WORK : (null) - was deprecated in 14.1.1
+PTSHELL_INI : (null) - was deprecated in 14.1.1
+_ADS_RPM_WEIGHT_ALGO : (null)
+ADS_APPLY_LER : (null) - was deprecated in 14.1.1
+ADS_FLATTEN_DIVIDER : (null) - was deprecated in 14.1.1
+ADS_AUTO_TUNING : (null) - was deprecated in 14.1.1
+_ADS_DONT_CREATE_PTSHELL_SLD : (null)
+_ADS_USE_NEW_SEQ_PROBAB : (null)
+ADS_APPLY_MSM : (null) - was deprecated in 14.1.1
+ADS_APSH_GUI_CONSOLE : (null) - was deprecated in 15.1.1
+_ADS_FSDB_TIME_BASED : (null)
+_ADS_FSDB_ALL_SIGNAL : (null)
+_ADS_FSDB_SESSION_COUNT : (null)
+_ADS_FSDB_SIGNAL_COUNT : (null)
+_ADS_FSDB_NOAI_LOAD : (null)
+_ADS_FSDB_TC_TYPE : (null)
+ADS_APPLY_SHARED_LNR : (null) - was deprecated in 14.1.1
+ADS_APPLY_SHARED_LER : (null) - was deprecated in 14.1.1
+ADS_NO_DEFAULT_PDB : (null) - was deprecated in 14.1.1
+ADS_SDF_VCD : (null) - was deprecated in 14.1.1
+_ADS_USE_ALL_BUFFER_RAILS : (null)
+ADS_ENABLE_CHECK_REWRITE : (null)
+ADS_USE_COMPOUND_GATES : (null) - was deprecated in 14.2.1
+ADS_ENHANCED_ARITH_MODELS : (null)
+_ADS_READ_PDB : (null)
+ADS_SHELL_AUTO_EXIT : (null) - was deprecated in 14.1.1
+_ADS_PACE_USE_DECRYPTED_FILE : (null)
+ADS_PACE_APPLY_CAP_SCALING : (null) - was deprecated in 14.1.1
+ADS_PACE_GEN_ADDITIONAL_DATA : (null) - was deprecated in 14.1.1
+_ADS_LEGACY_FRONT_ENDS : (null)
+_ADS_QT_REGRESSIONS : (null)
+ADS_GUI_UNIFIED_REDUCTIONS : (null) - was deprecated in 14.1.1
+_ADS_TIMER_AVG_COMB_FANOUT : (null)
+ADS_TIMER_CELL_SEL : (null) - was deprecated in 14.1.1
+_ADS_TCS_DONT_LOAD_ALL_COMB_CELLS : (null)
+_ADS_TCS_DESIGN_OP_LOAD : (null)
+_ADS_TCS_DESIGN_OP_SLEW : (null)
+_ADS_TCS_SKIP_RETRACE : (null)
+_ADS_TCS_ENABLE_WORD_LEVEL : (null)
+_ADS_TCS_DISABLE_BITTRACE_CACHE : (null)
+_ADS_TCS_DRIVE_STRENGTH_TOLERANCE : (null)
+_ADS_TCS_DEPTH_TOLERANCE : (null)
+_ADS_TCS_FANOUT_TOLERANCE : (null)
+_ADS_TCS_SKIP_LDB_CHECK : (null)
+_ADS_LDB_X1_CELL : (null)
+_ADS_LDB_LIB_OP_LOAD : (null)
+_ADS_LDB_LIB_OP_SLEW : (null)
+_ADS_LDB_IDEAL_SLEW_MODE : (null)
+_ADS_MERGE_FT_CLOCK_GATES : (null)
+ADS_GAF_MAX_VAR : (null)
+ADS_ADD_BBOX_SWITCHING_POWER : (null) - was deprecated in 14.1.1
+_ADS_FSDB_SEQ_OFF : (null)
+ADS_APPLY_MEM : (null) - was deprecated in 14.1.1
+_ADS_TIE_HIGH_PINS : (null)
+_ADS_TIE_LOW_PINS : (null)
+ADS_ENABLE_LOGIC_REDUNDANCY_ANALYSIS : (null) - was deprecated in 14.1.1
+_ADS_SAVE_ICGCS : (null)
+ADS_PACE_CONSERVATIVE_CLK_CAP : (null) - was deprecated in 14.1.1
+ADS_ENHANCED_PRESERVE_REGFILE : (null)
+ADS_DISABLE_RPM_SPEEDUP : (null)
+_ADS_LIB_CELL_LIMIT : (null)
+_ADS_MULTIPLE_PDBS : (null)
+_ADS_APPLY_DEF_PI_ACT_ON_HANGING_NET : (null)
+_ADS_ENABLE_IP_CORE_POWER_IN_REPORT : (null)
+_ADS_SHOW_INT_PWR_HEADER : (null)
+ADS_RESIZE_FLOPS : (null)
+ADS_RESIZE_LATCHES : (null)
+ADS_RESIZE_SUMMARY_FILE : (null)
+ADS_RESIZE_USE_CAP : (null)
+ADS_ELAB_OPTIMIZE_VECTOR_OPERATION : (null) - was deprecated in 14.1.1
+_ADS_NO_SDB : (null)
+_ADS_SDB_DEBUG : (null)
+PA_SHELL_INI : (null)
+ADS_LEGACY_MESSAGING : (null) - was deprecated in 15.1.1
+ADS_USE_LEGACY_SDC : (null) - was deprecated in 14.2.1
+_ADS_DONT_SAVE_EVENT_GAF_OPT_FILE : (null)
+_ADS_DISABLE_REGISTER_SLICING : (null)
+_ADS_MERGE_CONTROL_LINES : (null)
+_ADS_VELOCE_PRINT_API_DATA : (null)
+_ADS_ELAB_DISABLE_UNUSED_OPT : (null)
+_ADS_APPG_SKIP_NO_BACKTRACE : (null)
+_ADS_DISABLE_ELAB_REPORT : (null)
+_ADS_NO_DETAILED_VERTICAL_REPORT : (null)
+_ADS_DISABLE_COMPOUND_GATES : (null)
+_ADS_DISABLE_AOI21COMPOUND_GATES : (null)
+_ADS_USE_FFR_FSDB_READER : (null)
+_ADS_FSDB_ADAPTER_DEBUG : (null)
+_ADS_EXPAND_NPI_VECTORS : (null)
+_ADS_NPI_SESSION_SPAN : (null)
+_ADS_GLITCH_INSTANCE_THRESHOLD : (null)
+_ADS_DISABLE_PRINT_CGEE_IN_CG_BY_INST_SECTION : (null)
+_ADS_QA_SCRIPT_PATH : (null)
+_ADS_QA_SCRIPT_SKIP_WRITE_PDB : (null)
+_ADS_XML_NO_LINE_FILE : (null)
+_ADS_NO_PARSE_TREE_DUMP : (null)

@@ -1,0 +1,82 @@
+=head1 NAME
+
+report_interface_timing_margin - generate scripts for finding block-to-block timing margin
+
+=head1 SYNOPSIS
+
+hydra.pl report_interface_timing_margin B<-rpt_dir> I<DIR> B<-blocks> I<NAME>... B<-pt_shell> I<PATH> [B<-skip> I<NAME>...] [B<-scenarios> I<NAME>...] [B<-slack_threshold> I<NUM>] [B<-mode> I<NAME>] [B<-set> I<NAME>] [B<-report_viols_only> on|off]
+
+=head1 DESCRIPTION
+
+This script (and its sister script, B<process_interface_timing_margin>) is intended to provide timing fix information when doing block-to-block timing on top level. For timing violations through block pins, the margin will be calculated by timing the opposing delay type. That is, for setup violations, the hold slack will be checked to make sure that there is enough margin to fix setup without violating hold (and vice versa). Since the effect on the opposing delay varies when fixing the reference delay, the actual margin is not shown. Instead the report only lists the raw setup and hold numbers for your consideration.
+
+It is assumed that at this point, the blocks are frozen (and hopefully timing clean), so all timing fixes must be executed on top level. This means that any clock skew inserted on the top level to fix setup will affect clock paths downstream into the block. As an extra check to avoid introducing block timing violations, the setup slack for the following path is shown. This is shown in the "Setup (Next)" column in the report. Since hold fixes do not have this problem, the hold margin report will not have these columns.
+
+The final margin reports will use the following nomenclature:
+ Reference - The original delay type of the violation that is a candidate for fixing.
+ Opposing  - The opposite delay type of the violation above. If the reference delay type is setup, then the oppsing delay type is hold, and vice versa.
+ Next      - The setup delay of the timing path immediately downstream of the reference violation. This only applies to setup-type reference violations.
+
+At the top of the final margin reports, the reference and opposing scenario sets will be listed. These are the scenarios that were considered when finding the reference and opposing delays. The reference scenarios can be defined in this command, B<report_interface_timing_margin>, with the B<-scenarios> option. The opposing scenarios are defined in the command B<process_interface_timing_margin> with the B<-scenarios> option.
+
+Each block pin, for both its reference and opposing slacks, reports the scenario in which that path was found and the "type" of the path. The "type" refers to the location of the startpoint and the location of the endpoint. If a point is located inside the block pin's block, then a "b" for "block" is used. If not, then a "t" for "top" is used. Thus, a path "type" of "t2b" means that the startpoint is located on top and the endpoint is located on block, so the path is a "top to block" connection. Likewise for all other combinations.
+
+There are a few steps beyond this script that are required for the full margin reporting flow. If you use Hydra Setup to generate your STA flow and set the param B<STA_enable_margin_report> to on, this will all be automatically done. The flow is as follows:
+ 1. The STA tool generates timing reports for paths through all block pins.
+ 2. report_interface_timing_margin reads the reports and chooses the worst path for each block pin. This becomes the reference path. It then generates scripts that will do report_timing for the opposing delay type.
+ 3. The STA tool is run on the generated scripts and generates timing reports for the opposing delay type.
+ 4. process_interface_timing_margin will read the new reports and chooses the worst path for each block pin. This becomes the opposing path. It then generates the final margin reports.
+
+The final margin reports will be located in the ./rpt directory and will be named "<set_name>.setup.margin.rpt" or "<set_name>.hold.margin.rpt", where <set_name> is defined by the B<-set> option.
+
+=head1 OPTIONS
+
+=over
+
+=item B<-rpt_dir>
+
+The directory containing block pin timing reports. Each scenario should have its own subdirectory in the following format. The script will use the existing subdirectories to determine what scenarios exist.
+ <mode>.<process>.<temp>.<rc>
+
+Each report name should also have the following format:
+ <block>.<delay_type>.timing.rpt
+
+=item B<-blocks>
+
+A list of the blocks. This is used solely to find the correct timing reports for each block.
+
+=item B<-slack_threshold>
+
+Only violations with slack worse than the specified value will be considered. Optional.
+
+=item B<-mode>
+
+Only consider violations for the specified mode. Optional.
+
+=item B<-scenarios>
+
+Only consider the given scenarios when gathering reference delays. Optional. If this is not defined, then all scenarios found in the directory given by B<-rpt_dir> are used.
+
+=item B<-skip>
+
+A list of block pins to skip. This was added to work around troublesome block pins that would crash Primetime. Optional.
+
+=item B<-set>
+
+The name of the scenario set. Optional. The name "all" will be used if this is not defined.
+
+=item B<-pt_shell>
+
+Path to the Primetime shell binary. This used when creating the script that kicks off margin reporting in Primetime.
+
+=item B<-report_viols_only>
+
+Turn this option on to set an alternate mode where setup/hold violation data is only reported from the timing reports. No margin processing occurs in this mode. This mode is meant to only consolidate data from the timing reports. Optional. Default="off". Use "on" to enable.
+
+=back
+
+=head1 EXAMPLE
+
+=head1 SEE ALSO
+
+process_interface_timing_margin

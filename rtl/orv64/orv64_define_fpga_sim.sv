@@ -1,0 +1,6 @@
+`define FPGA
+`ifdef SYNTHESIS
+  `undefine SYNTHESIS
+`endif
+`define ORV64_SUPPORT_MULDIV
+`define ORV64_SUPPORT_HPMCOUNTER
