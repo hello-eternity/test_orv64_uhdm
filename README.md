@@ -71,14 +71,14 @@ And then you will find the bin file in orv64/tb/test_program/isa and orv64/tb/te
 After successfully compling and building, you can Run a single case:
 
     $ cd orv64/tb
-    $ ./rrvtest -e <path to elf file>
+    $ ./rrvtest -n -E <path to elf file>
 
 -e means run a single elf file in silent mode, only the test results will be output. If you want to see all of the output, you can use -E option
 
 To run all of the ISA-Test:
 
     $ cd orv64/tb
-    $ ./rrvtest -r
+    $ ./rrvtest -n -r
 
 -r means run a single elf file in silent mode, only the test results will be output. If you want to see all of the output, you can use -R option
 

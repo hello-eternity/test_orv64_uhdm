@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
+export DW_LIB_PATH=/opt/cad/synopsys/installs/syn/P-2019.03/dw/sim_ver
+
 ifeq ($(JOBS),)
   JOBS := $(shell grep -c ^processor /proc/cpuinfo 2>/dev/null)
   ifeq ($(JOBS),)
@@ -21,10 +23,10 @@ cosim:
 
 vcs:
 	make -j$(JOBS) -C ./cosim
-	vcs -sverilog $(PROJ_ROOT)/hardware/soc/tb/cosim/cosim.so -F ../rtl/flist/orv64-sim.f +lint=TFIPC-L -full64 -debug_access+all
+	vcs -sverilog cosim/cosim.so -F ../rtl/flist/orv64-sim.f +lint=TFIPC-L -full64 -debug_access+all
 
 verdi:
-	Verdi-SX -sverilog +define+VCS $(PROJ_ROOT)/hardware/soc/tb/cosim/cosim.so -F ../rtl/flist/orv64-sim.f +lint=TFIPC-L -top testbench
+	Verdi-SX -sverilog +define+VCS cosim/cosim.so -F ../rtl/flist/orv64-sim.f +lint=TFIPC-L -top testbench
 
 
 clean:
