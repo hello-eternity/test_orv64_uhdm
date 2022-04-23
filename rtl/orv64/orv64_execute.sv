@@ -19,21 +19,6 @@ module orv64_execute
   input   orv64_id2muldiv_t   id2mul_ff, id2div_ff, id2mul, id2div,
   `endif // ORV64_SUPPORT_MULDIV
 
-  `ifdef ORV64_SUPPORT_FP
-  input   orv64_id2fp_add_t   id2fp_add_s_ff,
-  input   orv64_id2fp_mac_t   id2fp_mac_s_ff,
-  input   orv64_id2fp_div_t   id2fp_div_s_ff,
-  input   orv64_id2fp_sqrt_t  id2fp_sqrt_s_ff,
-  input   orv64_id2fp_misc_t  id2fp_misc_ff,
-
-  `ifdef ORV64_SUPPORT_FP_DOUBLE
-  input   orv64_id2fp_add_t   id2fp_add_d_ff,
-  input   orv64_id2fp_mac_t   id2fp_mac_d_ff,
-  input   orv64_id2fp_div_t   id2fp_div_d_ff,
-  input   orv64_id2fp_sqrt_t  id2fp_sqrt_d_ff,
-  `endif // ORV64_SUPPORT_FP_DOUBLE
-
-  `endif // ORV64_SUPPORT_FP
 
   input   orv64_id2ex_ctrl_t  id2ex_ctrl_ff,
   input   orv64_excp_t        id2ex_excp_ff,
@@ -262,10 +247,7 @@ module orv64_execute
   always_comb begin
     case (id2ex_ctrl_ff.op1_sel)
       ORV64_OP1_SEL_RS1:    op1 = final_rs1;
-      `ifdef ORV64_SUPPORT_FP
-      ORV64_OP1_SEL_FP_RS1: op1 = id2ex_fp_rs1_ff;
-      ORV64_OP1_SEL_FP_RS1_SEXT: op1 = {{32{id2ex_fp_rs1_ff[31]}}, id2ex_fp_rs1_ff[31:0]};
-      `endif // ORV64_SUPPORT_FP
+      
       ORV64_OP1_SEL_ZERO:   op1 = 'b0;
       default:        op1 = 'b0;
     endcase
@@ -415,224 +397,16 @@ module orv64_execute
 
   //==========================================================
   // FP {{{
-`ifdef ORV64_SUPPORT_FP
 
-  // cycle counter and timing assertion {{{
-  //  input = fp_start_pulse, fp_cntr_tgt
-  //  output = fp_complete
-  localparam  FP_CNTR_BIT_WIDTH = $clog2(ORV64_N_CYCLE_FP_SQRT_D);
 
-  logic fp_cntr_en;
-  logic fp_start_pulse, fp_complete, wait_for_fp;
-  logic [FP_CNTR_BIT_WIDTH-1:0] fp_cntr_ff, fp_cntr_tgt;
 
-  assign  fp_cntr_en = (id2ex_ctrl_ff.fp_op != ORV64_FP_OP_NONE) & id_valid_ff;
-  assign  fp_start_pulse = (fp_cntr_ff == 'b0);
-  assign  wait_for_fp = fp_cntr_en & ~fp_complete;
-
-  always @ (posedge clk)
-    if (rst | (fp_complete & ma_ready))
-      fp_cntr_ff <= 'b0;
-    else if (fp_cntr_en)
-      fp_cntr_ff <= fp_cntr_ff + 1;
-
-  assign fp_complete = (fp_cntr_ff == fp_cntr_tgt);
-
-  import orv64_param_pkg::*;
-
-  always_comb
-    case (id2ex_ctrl_ff.fp_op)
-      ORV64_FP_OP_ADD_S:  fp_cntr_tgt = ORV64_N_CYCLE_FP_ADD_S - 1;
-      ORV64_FP_OP_MAC_S:  fp_cntr_tgt = ORV64_N_CYCLE_FP_MAC_S - 1;
-      ORV64_FP_OP_DIV_S:  fp_cntr_tgt = ORV64_N_CYCLE_FP_DIV_S - 1;
-      ORV64_FP_OP_SQRT_S: fp_cntr_tgt = ORV64_N_CYCLE_FP_SQRT_S - 1;
-
-      `ifdef ORV64_SUPPORT_FP_DOUBLE
-      ORV64_FP_OP_ADD_D:  fp_cntr_tgt = ORV64_N_CYCLE_FP_ADD_D - 1;
-      ORV64_FP_OP_MAC_D:  fp_cntr_tgt = ORV64_N_CYCLE_FP_MAC_D - 1;
-      ORV64_FP_OP_DIV_D:  fp_cntr_tgt = ORV64_N_CYCLE_FP_DIV_D - 1;
-      ORV64_FP_OP_SQRT_D: fp_cntr_tgt = ORV64_N_CYCLE_FP_SQRT_D - 1;
-      `endif
-
-      ORV64_FP_OP_MISC:   fp_cntr_tgt = ORV64_N_CYCLE_FP_MISC - 1;
-      default:    fp_cntr_tgt = 'h0;
-    endcase
-
-  logic [130:0] add_s_input;
-  assign add_s_input = {id2fp_add_s_ff.rs1, id2fp_add_s_ff.rs2, id2fp_add_s_ff.frm_dw};
-  // }}}
-
-  // ADD {{{
-  orv64_data_t        rd_add_s, rd_add_d;
-  orv64_fstatus_dw_t  fstatus_dw_add_s, fstatus_dw_add_d;
-
-  orv64_fp_add_single FP_ADD_S(
-    .rd(rd_add_s), .fstatus_dw(fstatus_dw_add_s),
-    .rs1(id2fp_add_s_ff.rs1), .rs2(id2fp_add_s_ff.rs2), .frm_dw(id2fp_add_s_ff.frm_dw)
-  );
-
-`ifdef ORV64_SUPPORT_FP_DOUBLE
-  orv64_fp_add_double FP_ADD_D(
-    .rd(rd_add_d), .fstatus_dw(fstatus_dw_add_d),
-    .rs1(id2fp_add_d_ff.rs1), .rs2(id2fp_add_d_ff.rs2), .frm_dw(id2fp_add_d_ff.frm_dw)
-  );
-`endif
-  // }}}
-
-  // CMP {{{
-  orv64_data_t        rd_cmp_s, rd_cmp_d;
-  orv64_fflags_t      fflags_cmp_s, fflags_cmp_d;
-  orv64_fp_cmp #(.is_32(1))  FP_CMP_S(.rd_cmp(rd_cmp_s), .fflags(fflags_cmp_s), .rs1(id2fp_add_s_ff.rs1), .rs2(id2fp_add_s_ff.rs2), .rd_add(rd_add_s), .fp_cmp_sel(id2ex_ctrl_ff.fp_cmp_sel));
-
-`ifdef ORV64_SUPPORT_FP_DOUBLE
-  orv64_fp_cmp #(.is_32(0))  FP_CMP_D(.rd_cmp(rd_cmp_d), .fflags(fflags_cmp_d), .rs1(id2fp_add_d_ff.rs1), .rs2(id2fp_add_d_ff.rs2), .rd_add(rd_add_d), .fp_cmp_sel(id2ex_ctrl_ff.fp_cmp_sel));
-`endif
-  // }}}
-
-  // MAC {{{
-  orv64_data_t        rd_mac_s, rd_mac_d;
-  orv64_fstatus_dw_t  fstatus_dw_mac_s, fstatus_dw_mac_d;
-
-  orv64_fp_mac_single FP_MAC_S(
-    .rd(rd_mac_s), .fstatus_dw(fstatus_dw_mac_s),
-    .rs1(id2fp_mac_s_ff.rs1), .rs2(id2fp_mac_s_ff.rs2), .rs3(id2fp_mac_s_ff.rs3), .frm_dw(id2fp_mac_s_ff.frm_dw),
-    .is_mul(id2fp_mac_s_ff.is_mul)
-  );
-
-`ifdef ORV64_SUPPORT_FP_DOUBLE
-  orv64_fp_mac_double FP_MAC_D(
-    .rd(rd_mac_d), .fstatus_dw(fstatus_dw_mac_d),
-    .rs1(id2fp_mac_d_ff.rs1), .rs2(id2fp_mac_d_ff.rs2), .rs3(id2fp_mac_d_ff.rs3), .frm_dw(id2fp_mac_d_ff.frm_dw),
-    .is_mul(id2fp_mac_d_ff.is_mul)
-  );
-`endif
-  // }}}
-
-  // DIV {{{
-  logic fp_div_s_en, fp_div_d_en, clkg_fp_div_s, clkg_fp_div_d;
-  assign fp_div_s_en = (id2ex_ctrl_ff.fp_op == ORV64_FP_OP_DIV_S) & id_valid_ff;
-  assign fp_div_d_en = (id2ex_ctrl_ff.fp_op == ORV64_FP_OP_DIV_D) & id_valid_ff;
-  orv64_clk_gating CG_FP_DIV_S(.tst_en(1'b0), .en(fp_div_s_en), .clk(clk), .rst(rst), .clkg(clkg_fp_div_s));
-  orv64_clk_gating CG_FP_DIV_D(.tst_en(1'b0), .en(fp_div_d_en), .clk(clk), .rst(rst), .clkg(clkg_fp_div_d));
-
-  orv64_data_t        rd_div_s, rd_div_d;
-  orv64_fstatus_dw_t  fstatus_dw_div_s, fstatus_dw_div_d;
-  logic         fp_div_s_div_0, fp_div_d_div_0;
-  logic         complete_div_s, complete_div_d;
-  orv64_fp_div_single FP_DIV_S(
-    .rd(rd_div_s), .fstatus_dw(fstatus_dw_div_s), .is_div_0(fp_div_s_div_0), .complete(complete_div_s),
-    .rs1(id2fp_div_s_ff.rs1), .rs2(id2fp_div_s_ff.rs2), .frm_dw(id2fp_div_s_ff.frm_dw),
-    .start_pulse(fp_start_pulse), .rst, .clk(clkg_fp_div_s)
-  );
-
-`ifdef ORV64_SUPPORT_FP_DOUBLE
-  orv64_fp_div_double FP_DIV_D(
-    .rd(rd_div_d), .fstatus_dw(fstatus_dw_div_d), .is_div_0(fp_div_d_div_0), .complete(complete_div_d),
-    .rs1(id2fp_div_d_ff.rs1), .rs2(id2fp_div_d_ff.rs2), .frm_dw(id2fp_div_d_ff.frm_dw),
-    .start_pulse(fp_start_pulse), .rst, .clk(clkg_fp_div_d)
-  );
-`endif
-  // }}}
-
-  // SQRT {{{
-  orv64_data_t        rd_sqrt_s, rd_sqrt_d;
-  orv64_fstatus_dw_t  fstatus_dw_sqrt_s, fstatus_dw_sqrt_d;
-  orv64_fp_sqrt_single FP_SQRT_S(
-    .rd(rd_sqrt_s), .fstatus_dw(fstatus_dw_sqrt_s),
-    .rs1(id2fp_sqrt_s_ff.rs1), .frm_dw(id2fp_sqrt_s_ff.frm_dw)
-  );
-
-`ifdef ORV64_SUPPORT_FP_DOUBLE
-  orv64_fp_sqrt_double FP_SQRT_D(
-    .rd(rd_sqrt_d), .fstatus_dw(fstatus_dw_sqrt_d),
-    .rs1(id2fp_sqrt_d_ff.rs1), .frm_dw(id2fp_sqrt_d_ff.frm_dw)
-  );
-`endif
-  // }}}
-
-  // MISC {{{
-  orv64_data_t        rd_sgnj, rd_cls, rd_i2s, rd_i2d, rd_s2i, rd_d2i, rd_s2d, rd_d2s;
-  orv64_fstatus_dw_t  fstatus_dw_i2s, fstatus_dw_i2d, fstatus_dw_s2i, fstatus_dw_d2i, fstatus_dw_s2d, fstatus_dw_d2s;
-  orv64_fflags_t      fflags_s2i, fflags_d2i;
-  orv64_fp_misc FP_MISC(
-    .rs1(id2fp_misc_ff.rs1), .rs2(id2fp_misc_ff.rs2), .is_32(id2ex_ctrl_ff.is_32), .frm_dw(id2fp_misc_ff.frm_dw),
-    .fp_sgnj_sel(id2ex_ctrl_ff.fp_sgnj_sel), .fp_cvt_sel(id2ex_ctrl_ff.fp_cvt_sel), .rstn(~rst),
-    .*);
-  // }}}
-
-  orv64_data_t  fp_rd;
-  always_comb begin
-    unique case (id2ex_ctrl_ff.fp_out_sel)
-      ORV64_FP_OUT_SEL_ADD_S:   fp_rd = rd_add_s;
-      ORV64_FP_OUT_SEL_CMP_S:   fp_rd = rd_cmp_s;
-      ORV64_FP_OUT_SEL_MAC_S:   fp_rd = rd_mac_s;
-      ORV64_FP_OUT_SEL_DIV_S:   fp_rd = rd_div_s;
-      ORV64_FP_OUT_SEL_SQRT_S:  fp_rd = rd_sqrt_s;
-      ORV64_FP_OUT_SEL_SGNJ:    fp_rd = rd_sgnj;
-      ORV64_FP_OUT_SEL_CVT_I2S: fp_rd = rd_i2s;
-      ORV64_FP_OUT_SEL_CVT_S2I: fp_rd = rd_s2i;
-      ORV64_FP_OUT_SEL_CLS:     fp_rd = rd_cls;
-`ifdef ORV64_SUPPORT_FP_DOUBLE
-      ORV64_FP_OUT_SEL_ADD_D:   fp_rd = rd_add_d;
-      ORV64_FP_OUT_SEL_CMP_D:   fp_rd = rd_cmp_d;
-      ORV64_FP_OUT_SEL_MAC_D:   fp_rd = rd_mac_d;
-      ORV64_FP_OUT_SEL_DIV_D:   fp_rd = rd_div_d;
-      ORV64_FP_OUT_SEL_SQRT_D:  fp_rd = rd_sqrt_d;
-      ORV64_FP_OUT_SEL_CVT_I2D: fp_rd = rd_i2d;
-      ORV64_FP_OUT_SEL_CVT_D2I: fp_rd = rd_d2i;
-      ORV64_FP_OUT_SEL_CVT_S2D: fp_rd = rd_s2d;
-      ORV64_FP_OUT_SEL_CVT_D2S: fp_rd = rd_d2s;
-`endif
-      default:            fp_rd = 64'b0;
-    endcase
-  end
-  
-  always_comb
-    unique case (id2ex_ctrl_ff.fp_out_sel)
-      ORV64_FP_OUT_SEL_ADD_S:   ex2ma.fflags = func_fp_fflags(fstatus_dw_add_s);
-      ORV64_FP_OUT_SEL_CMP_S:   ex2ma.fflags = fflags_cmp_s;
-      ORV64_FP_OUT_SEL_MAC_S:   ex2ma.fflags = func_fp_fflags(fstatus_dw_mac_s);
-      ORV64_FP_OUT_SEL_DIV_S: begin
-        ex2ma.fflags = func_fp_fflags(fstatus_dw_div_s);
-        ex2ma.fflags.dz = fp_div_s_div_0;
-      end
-      ORV64_FP_OUT_SEL_SQRT_S:  ex2ma.fflags = func_fp_fflags(fstatus_dw_sqrt_s);
-      ORV64_FP_OUT_SEL_CVT_I2S: ex2ma.fflags = func_fp_fflags(fstatus_dw_i2s);
-      ORV64_FP_OUT_SEL_CVT_S2I: ex2ma.fflags = fflags_s2i;
-`ifdef ORV64_SUPPORT_FP_DOUBLE
-      ORV64_FP_OUT_SEL_ADD_D:   ex2ma.fflags = func_fp_fflags(fstatus_dw_add_d);
-      ORV64_FP_OUT_SEL_CMP_D:   ex2ma.fflags = fflags_cmp_d;
-      ORV64_FP_OUT_SEL_MAC_D:   ex2ma.fflags = func_fp_fflags(fstatus_dw_mac_d);
-      ORV64_FP_OUT_SEL_DIV_D: begin
-        ex2ma.fflags = func_fp_fflags(fstatus_dw_div_d);
-        ex2ma.fflags.dz = fp_div_d_div_0;
-      end
-      ORV64_FP_OUT_SEL_SQRT_D:  ex2ma.fflags = func_fp_fflags(fstatus_dw_sqrt_d);
-      ORV64_FP_OUT_SEL_CVT_I2D: ex2ma.fflags = func_fp_fflags(fstatus_dw_i2d);
-      ORV64_FP_OUT_SEL_CVT_D2I: ex2ma.fflags = fflags_d2i;
-      ORV64_FP_OUT_SEL_CVT_S2D: ex2ma.fflags = func_fp_fflags(fstatus_dw_s2d);
-      ORV64_FP_OUT_SEL_CVT_D2S: ex2ma.fflags = func_fp_fflags(fstatus_dw_d2s);
-`endif
-      default:            ex2ma.fflags = 5'b0;
-    endcase
-`else // ORV64_SUPPORT_FP
   logic wait_for_fp;
   assign wait_for_fp = 1'b0;
   assign ex2ma.fflags = 5'b0;
 
-`endif // ORV64_SUPPORT_FP }}}
 
-`ifdef ORV64_SUPPORT_FP // {{{
-  orv64_data_t    fp_mv;
 
-  always_comb begin
-    unique if(id2ex_ctrl_ff.is_32 == 1'b1) begin
-      fp_mv = {{32{1'b1}},final_rs1[31:0]};
-    end else begin
-      fp_mv = final_rs1;
-    end
-  end
-`endif // ORV64_SUPPORT_FP }}}
+
 
   //==========================================================
   // select ex_out {{{
@@ -646,10 +420,7 @@ module orv64_execute
       ORV64_EX_OUT_SEL_DIV_Q: ex2ma.ex_out = div_rdq;
       ORV64_EX_OUT_SEL_DIV_R: ex2ma.ex_out = div_rdr;
       `endif // ORV64_SUPPORT_MULDIV
-      `ifdef ORV64_SUPPORT_FP
-      ORV64_EX_OUT_SEL_FP_MV: ex2ma.ex_out = fp_mv;
-      ORV64_EX_OUT_SEL_FP:    ex2ma.ex_out = fp_rd;
-      `endif // ORV64_SUPPORT_FP
+      
       default:          ex2ma.ex_out = alu_out;
     endcase
   // }}}
@@ -732,28 +503,7 @@ module orv64_execute
             is_illegal_inst = 1'b1;
           end
         endcase // }}}
-      `ifdef ORV64_SUPPORT_FP
-      ORV64_LOAD_FP: // {{{
-        case (funct3)
-          3'h2: func_orv64_decode_ex2ma_flw(ex2ma_ctrl);
-          3'h3: func_orv64_decode_ex2ma_fld(ex2ma_ctrl);
-          default: begin
-            func_orv64_decode_ex2ma_default(ex2ma_ctrl);
-            is_illegal_inst = 1'b1;
-          end
-        endcase
-      // }}}
-      ORV64_STORE_FP: // {{{
-        case (funct3)
-          3'h2: func_orv64_decode_ex2ma_fsw(ex2ma_ctrl);
-          3'h3: func_orv64_decode_ex2ma_fsd(ex2ma_ctrl);
-          default: begin
-            func_orv64_decode_ex2ma_default(ex2ma_ctrl);
-            is_illegal_inst = 1'b1;
-          end
-        endcase
-      // }}}
-      `endif
+     
       ORV64_SYSTEM: // {{{
         case (funct3)
           3'h0: begin

@@ -1,7 +1,7 @@
 // Copyright 2021 RISC-V International Open Source Laboratory (RIOS Lab). All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-
+`define ZERO(n) {(n){1'b0}}
 module oursring_req_arbiter
 #(
   parameter N_IN_PORT = 3 // num of master port

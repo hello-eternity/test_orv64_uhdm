@@ -32,8 +32,7 @@
 
 
 
-`ifndef __PYGMY_CFG__SV__
-`define __PYGMY_CFG__SV__
+
 package pygmy_cfg;
   // backedn domain
   parameter int TOP_PD   = 0;
@@ -218,4 +217,4 @@ package pygmy_cfg;
   // for MEM BARRIER {{{
   parameter int MEM_BARRIER_STATUS_WIDTH = NUM_ORV64_PORT;
  endpackage
-`endif
+

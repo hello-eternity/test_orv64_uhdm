@@ -25,9 +25,6 @@ module orv64_mem_access
   output  orv64_npc_t         wb2if_npc,
   // MA -> Regfile
   output  orv64_ma2rf_t       ma2irf,
-`ifdef ORV64_SUPPORT_FP
-  output  orv64_ma2rf_t       ma2fprf,
-`endif
   // MA <-> CS
   output  orv64_ma2cs_t       ma2cs,
   output  orv64_ma2cs_ctrl_t  ma2cs_ctrl,
@@ -296,22 +293,14 @@ module orv64_mem_access
       default:          rd = ex2ma_ff.ex_out;
     endcase
 
-`ifdef ORV64_SUPPORT_FP_DOUBLE
-  assign rd_fp = ex2ma_ctrl_ff.is_fp_32 ? {{32{1'b1}}, rd[31:0]}: rd;
-`else
+
   assign rd_fp = rd;
-`endif
 
   assign rd_ir = rd;
 
   assign ma2irf.rd = rd_ir;
   assign ma2irf.rd_addr = ex2ma_ff.rd_addr;
   assign ma2irf.rd_we = ma_valid & wb_ready & ~ex2ma_ctrl_ff.is_rd_fp & ex2ma_ctrl_ff.rd_we & (ex2ma_ff.rd_addr != 'b0) & ~cs2ma_excp.valid;
-`ifdef ORV64_SUPPORT_FP
-  assign ma2fprf.rd = rd_fp;
-  assign ma2fprf.rd_addr = ex2ma_ff.rd_addr;
-  assign ma2fprf.rd_we = ma_valid & wb_ready & ex2ma_ctrl_ff.is_rd_fp & ex2ma_ctrl_ff.rd_we & ~cs2ma_excp.valid;
-`endif
   // }}}
 
   //==========================================================

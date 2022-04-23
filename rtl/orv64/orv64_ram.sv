@@ -1,3 +1,4 @@
+`define ZERO_BITS(t) {($bits(t)){1'b0}}
 module orv64_itb_ram // instruction trace buffer ram {{{
   import orv64_typedef_pkg::*;
 (

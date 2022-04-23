@@ -9,18 +9,19 @@
 
 //==========================================================
 // `define ORV_64
-
-`define ORV_SUPPORT_MULDIV
+`define PYGMY_ES1Y 
+`define STATION_VP_PKG__SV
+//`define ORV_SUPPORT_MULDIV
 `define ORV_BACKDOOR_INIT_TAG_RAM
 //`define ORV_SUPPORT_FP
 //`define ORV_SUPPORT_FP_DOUBLE
 // `define ORV_VECTOR_EXT_IN_MASTER_CORE
 //`define ORV_VECTOR_EXT
-`ifndef FPGA_SIM
-  `define USE_T28HPCP
-`else
-  `define FPGA
-`endif
+//`ifndef FPGA_SIM
+ // `define USE_T28HPCP
+//`else
+`define FPGA
+//`endif
 `define VECTOR_GEN2
 // `define ORV_SUPPORT_OURSBUS
 // `define ORV_SUPPORT_MAGICMEM

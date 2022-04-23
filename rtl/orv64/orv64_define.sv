@@ -1,8 +1,9 @@
 `define ORV64_SUPPORT_MULDIV
-`ifndef NO_FP_DOUBLE
-`define ORV64_SUPPORT_FP
-`define ORV64_SUPPORT_FP_DOUBLE
-`endif
+`define FPGA
+//`ifndef NO_FP_DOUBLE
+//`define ORV64_SUPPORT_FP
+//`define ORV64_SUPPORT_FP_DOUBLE
+//`endif
 //`define ORV64_SUPPORT_OURSBUS
 //`define ORV64_SUPPORT_MAGICMEM
 //`define ORV64_SUPPORT_UART

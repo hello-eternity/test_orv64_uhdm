@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-`ifndef __OURSRING_TYPEDEF__SV__
+
 `define __OURSRING_TYPEDEF__SV__
 
 package oursring_typedef;
@@ -16,4 +16,3 @@ package oursring_typedef;
   
 endpackage
 
-`endif

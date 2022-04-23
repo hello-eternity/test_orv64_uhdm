@@ -176,13 +176,6 @@ module orv64
   orv64_id2muldiv_t     id2mul_ff, id2div_ff, id2mul, id2div;
 `endif
 
-`ifdef ORV64_SUPPORT_FP
-  orv64_id2fp_add_t     id2fp_add_s_ff, id2fp_add_d_ff;
-  orv64_id2fp_mac_t     id2fp_mac_s_ff, id2fp_mac_d_ff;
-  orv64_id2fp_div_t     id2fp_div_s_ff, id2fp_div_d_ff;
-  orv64_id2fp_sqrt_t    id2fp_sqrt_s_ff, id2fp_sqrt_d_ff;
-  orv64_id2fp_misc_t    id2fp_misc_ff;
-`endif
   //------------------------------------------------------
   // ctrl
   orv64_if2id_ctrl_t    if2id_ctrl_ff;
@@ -302,11 +295,6 @@ module orv64
   orv64_irf2id_t    irf2id;
   orv64_ma2rf_t     ma2irf;
   
-`ifdef ORV64_SUPPORT_FP
-  orv64_if2fprf_t   if2fprf;
-  orv64_fprf2id_t   fprf2id;
-  orv64_ma2rf_t     ma2fprf;
-`endif
   //------------------------------------------------------
   // cache interface
   orv64_if2ic_t     if2ic;
@@ -375,9 +363,7 @@ module orv64
     .ma2rf(ma2irf), 
     .*
   );
-`ifdef ORV64_SUPPORT_FP
-  orv64_fp_regfile  FPRF(.ma2rf(ma2fprf), .*);
-`endif // ORV64_SUPPORT_FP
+
 
   // 3 PTW, icache, dcache
   logic               [4:0]     cpu_if_req_valid; 

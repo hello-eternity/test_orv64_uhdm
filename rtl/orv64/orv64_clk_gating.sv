@@ -5,10 +5,10 @@ module orv64_clk_gating
   output  clkg,
   input   en, tst_en, rst, clk
 );
-  `ifdef FPGA
+  //`ifdef FPGA
     assign clkg = clk;
-  `else
-  generate
+  //`else
+  /*generate
     if (DRIVEN == 1) begin: d1
       CKLNQD1BWP35P140 LNQ(.E(en), .TE(tst_en), .CP(clk), .Q(clkg));
     end
@@ -25,5 +25,5 @@ module orv64_clk_gating
       CKLNQD12BWP35P140 LNQ(.E(en), .TE(tst_en), .CP(clk), .Q(clkg));
     end
   endgenerate
-  `endif
+  `endif*/
 endmodule

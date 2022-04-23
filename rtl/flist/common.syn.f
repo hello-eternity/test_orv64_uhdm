@@ -14,6 +14,6 @@
 ../vcore_gen2/rtl/vcore_cfg.sv
 ../vcore_gen2/rtl/vcore_pkg.sv
 ../common/oursring_typedef.sv
--f es1y_rtl_gen.syn.f
--f lib.syn.f
+-f /work/home/yinguohua/Downloads/AMD/orv64/rtl/flist/es1y_rtl_gen.syn.f
+-f /work/home/yinguohua/Downloads/AMD/orv64/rtl/flist/lib.syn.f
 

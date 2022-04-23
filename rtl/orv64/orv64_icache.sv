@@ -1,6 +1,167 @@
 // Copyright 2021 RISC-V International Open Source Laboratory (RIOS Lab). All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+/*module sram_256_128_sky130A(clk0,vccd1,vssd1,csb0,web0,addr0,din0,dout0);
+  input  clk0; // clock
+  input   csb0; // active low chip select
+  input  web0; // active low write control
+  input [6:0]  addr0;
+  input [255:0]  din0;
+  output [255:0] dout0;
+  inout vccd1;
+  inout vssd1;
+endmodule
+
+module sram_24_128_sky130A(clk0,vccd1,vssd1,csb0,web0,addr0,din0,dout0);
+  input  clk0; // clock
+  input   csb0; // active low chip select
+  input  web0; // active low write control
+  input [6:0]  addr0;
+  input [23:0]  din0;
+  output [23:0] dout0;
+  inout vccd1;
+  inout vssd1;
+endmodule*/
+module sram_24_128_sky130A(
+`ifdef USE_POWER_PINS
+    vccd1,
+    vssd1,
+`endif
+// Port 0: RW
+    clk0,csb0,web0,addr0,din0,dout0
+  );
+
+  parameter DATA_WIDTH = 24 ;
+  parameter ADDR_WIDTH = 7 ;
+  parameter RAM_DEPTH = 1 << ADDR_WIDTH;
+  // FIXME: This delay is arbitrary.
+  parameter DELAY = 3 ;
+  parameter VERBOSE = 1 ; //Set to 0 to only display warnings
+  parameter T_HOLD = 1 ; //Delay to hold dout value after posedge. Value is arbitrary
+
+`ifdef USE_POWER_PINS
+    inout vccd1;
+    inout vssd1;
+`endif
+  input  clk0; // clock
+  input   csb0; // active low chip select
+  input  web0; // active low write control
+  input [ADDR_WIDTH-1:0]  addr0;
+  input [DATA_WIDTH-1:0]  din0;
+  output [DATA_WIDTH-1:0] dout0;
+
+  reg  csb0_reg;
+  reg  web0_reg;
+  reg [ADDR_WIDTH-1:0]  addr0_reg;
+  reg [DATA_WIDTH-1:0]  din0_reg;
+  reg [DATA_WIDTH-1:0]  dout0;
+
+  // All inputs are registers
+  always @(posedge clk0)
+  begin
+    csb0_reg = csb0;
+    web0_reg = web0;
+    addr0_reg = addr0;
+    din0_reg = din0;
+    #(T_HOLD) dout0 = 24'bx;
+    if ( !csb0_reg && web0_reg && VERBOSE ) 
+      $display($time," Reading %m addr0=%b dout0=%b",addr0_reg,mem[addr0_reg]);
+    if ( !csb0_reg && !web0_reg && VERBOSE )
+      $display($time," Writing %m addr0=%b din0=%b",addr0_reg,din0_reg);
+  end
+
+reg [DATA_WIDTH-1:0]    mem [0:RAM_DEPTH-1];
+
+  // Memory Write Block Port 0
+  // Write Operation : When web0 = 0, csb0 = 0
+  always @ (negedge clk0)
+  begin : MEM_WRITE0
+    if ( !csb0_reg && !web0_reg ) begin
+        mem[addr0_reg][23:0] = din0_reg[23:0];
+    end
+  end
+
+  // Memory Read Block Port 0
+  // Read Operation : When web0 = 1, csb0 = 0
+  always @ (negedge clk0)
+  begin : MEM_READ0
+    if (!csb0_reg && web0_reg)
+       dout0 <= #(DELAY) mem[addr0_reg];
+  end
+
+endmodule
+
+module sram_256_128_sky130A(
+`ifdef USE_POWER_PINS
+    vdd,
+    gnd,
+`endif
+// Port 0: RW
+    clk0,csb0,web0,addr0,din0,dout0
+  );
+
+  parameter DATA_WIDTH = 256 ;
+  parameter ADDR_WIDTH = 7 ;
+  parameter RAM_DEPTH = 1 << ADDR_WIDTH;
+  // FIXME: This delay is arbitrary.
+  parameter DELAY = 3 ;
+  parameter VERBOSE = 1 ; //Set to 0 to only display warnings
+  parameter T_HOLD = 1 ; //Delay to hold dout value after posedge. Value is arbitrary
+
+`ifdef USE_POWER_PINS
+    inout vdd;
+    inout gnd;
+`endif
+  input  clk0; // clock
+  input   csb0; // active low chip select
+  input  web0; // active low write control
+  input [ADDR_WIDTH-1:0]  addr0;
+  input [DATA_WIDTH-1:0]  din0;
+  output [DATA_WIDTH-1:0] dout0;
+
+  reg  csb0_reg;
+  reg  web0_reg;
+  reg [ADDR_WIDTH-1:0]  addr0_reg;
+  reg [DATA_WIDTH-1:0]  din0_reg;
+  reg [DATA_WIDTH-1:0]  dout0;
+
+  // All inputs are registers
+  always @(posedge clk0)
+  begin
+    csb0_reg = csb0;
+    web0_reg = web0;
+    addr0_reg = addr0;
+    din0_reg = din0;
+    #(T_HOLD) dout0 = 256'bx;
+    if ( !csb0_reg && web0_reg && VERBOSE ) 
+      $display($time," Reading %m addr0=%b dout0=%b",addr0_reg,mem[addr0_reg]);
+    if ( !csb0_reg && !web0_reg && VERBOSE )
+      $display($time," Writing %m addr0=%b din0=%b",addr0_reg,din0_reg);
+  end
+
+reg [DATA_WIDTH-1:0]    mem [0:RAM_DEPTH-1];
+
+  // Memory Write Block Port 0
+  // Write Operation : When web0 = 0, csb0 = 0
+  always @ (negedge clk0)
+  begin : MEM_WRITE0
+    if ( !csb0_reg && !web0_reg ) begin
+        mem[addr0_reg][255:0] = din0_reg[255:0];
+    end
+  end
+
+  // Memory Read Block Port 0
+  // Read Operation : When web0 = 1, csb0 = 0
+  always @ (negedge clk0)
+  begin : MEM_READ0
+    if (!csb0_reg && web0_reg)
+       dout0 <= #(DELAY) mem[addr0_reg];
+  end
+
+endmodule
+
+
+
 
 module orv64_icache
   import pygmy_cfg::*;
@@ -538,45 +699,23 @@ module orv64_icache
 
   generate
     for (genvar i=0; i<ORV64_N_ICACHE_WAY; i++) begin : PER_WAY
-`ifndef FPGA
-      TS5N28HPCPHVTA128X24M2FWSO TAG_RAM(  // 1prf
-        .SLP(1'b0), .SD(~cfg_pwr_on), .CLK(clk), .BWEB('0),
-        .CEB(~tag_ram_en[i]),
-        .WEB(~tag_ram_rw[i]),
-        .A(tag_index[i]),
-        .D(tag_ram_din[i]),
-        .Q(tag_ram_dout[i])
+      sram_24_128_sky130A TAG_RAM(
+        .clk0(clk),
+        .csb0(~tag_ram_en[i] & ~cfg_pwr_on),
+        .web0(~tag_ram_rw[i]),
+        .addr0(tag_index[i]),
+        .din0(tag_ram_din[i]),
+        .dout0(tag_ram_dout[i])
       );
 
-      TS1N28HPCPUHDHVTB128X256M1SWSO DATA_RAM (
-        .SLP(1'b0), .SD(~cfg_pwr_on), .CLK(clk), .BWEB(~data_ram_bitmask[i]),
-        .CEB(~data_ram_en[i]),
-        .WEB(~data_ram_rw[i]),
-        .A(data_index[i]),
-        .RTSEL(2'b10),
-        .WTSEL(2'b00),
-        .D(data_ram_din[i]),
-        .Q(data_ram_dout[i])
+      sram_256_128_sky130A DATA_RAM (
+        .clk0(clk),
+        .csb0(~data_ram_en[i] & ~cfg_pwr_on),
+        .web0(~data_ram_rw[i]),
+        .addr0(data_index[i]),
+        .din0(data_ram_din[i]),
+        .dout0(data_ram_dout[i])
       );
-`else // FPGA
-      xilinx_spsram #(.WIDTH(24), .BYTE_WIDTH(24), .DEPTH(128)) TAG_RAM(
-        .SLP(1'b0), .SD(~cfg_pwr_on), .CLK(clk), .BWEB('0),
-        .CEB(~tag_ram_en[i]),
-        .WEB(~tag_ram_rw[i]),
-        .A(tag_index[i]),
-        .D(tag_ram_din[i]),
-        .Q(tag_ram_dout[i])
-      );
-
-      xilinx_spsram #(.BYTE_WIDTH(256), .WIDTH(256), .DEPTH(128)) DATA_RAM(
-        .SLP(1'b0), .SD(~cfg_pwr_on), .CLK(clk), .BWEB(~data_ram_bitmask[i]),
-        .CEB(~data_ram_en[i]),
-        .WEB(~data_ram_rw[i]),
-        .A(data_index[i]),
-        .D(data_ram_din[i]),
-        .Q(data_ram_dout[i])
-      );
-`endif
     end
   endgenerate
 

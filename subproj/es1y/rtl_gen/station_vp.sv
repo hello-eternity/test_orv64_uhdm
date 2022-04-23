@@ -6,8 +6,7 @@
 
 
 
-`ifdef PYGMY_ES1Y
-`ifndef STATION_VP_PKG__SV
+
 `define STATION_VP_PKG__SV
 package station_vp_pkg;
   localparam int STATION_VP_RING_ADDR_WIDTH = 'h19;
@@ -1540,8 +1539,8 @@ package station_vp_pkg;
   localparam bit [25 - 1:0] STATION_VP_S2B_VCORE_PMU_EN_ADDR_2 = 64'h300710;
   localparam bit [25 - 1:0] STATION_VP_S2B_VCORE_PMU_EN_ADDR_3 = 64'h400710;
 endpackage
-`endif
-`ifndef STATION_VP__SV
+
+
 `define STATION_VP__SV
 module station_vp
   import pygmy_cfg::*;
@@ -1683,7 +1682,6 @@ module station_vp
     assert (BLOCK_INST_ID < 4) else $fatal("%m: BLOCK_INST_ID = %d >= 4", BLOCK_INST_ID);
   end
   `endif
-
   oursring_resp_if_b_t      station2brb_rsp_b;
   oursring_resp_if_r_t      station2brb_rsp_r;
   logic                     station2brb_rsp_rvalid;
@@ -1699,9 +1697,7 @@ module station_vp
   logic                     station2brb_req_arready;
   logic                     station2brb_req_wready;
   logic                     station2brb_req_awready;
-
   oursring_station #(.STATION_ID_WIDTH_0(STATION_ID_WIDTH_0), .LOCAL_STATION_ID_0(LOCAL_STATION_ID_0), .RING_ADDR_WIDTH(STATION_VP_RING_ADDR_WIDTH), .MAX_RING_ADDR(STATION_VP_MAX_RING_ADDR)) station_u (
-
     .i_req_local_if_ar      (i_req_local_if_ar), 
     .i_req_local_if_awvalid (i_req_local_if_awvalid), 
     .i_req_local_if_awready (i_req_local_if_awready), 
@@ -1765,7 +1761,6 @@ module station_vp
     .clk                    (clk),
     .rstn                   (rstn)
     );
-
   ring_data_t wmask, wmask_inv;
   generate
     for (genvar i = 0; i < $bits(ring_strb_t); i++) begin : WMASK_GEN
@@ -1773,11 +1768,9 @@ module station_vp
       assign wmask_inv[i * 8 +: 8]  = (station2brb_req_w.wstrb[i]) ? 8'h00 : 8'hff;
     end
   endgenerate
-
   orv64_vaddr_t rff_s2b_cfg_rst_pc;
   orv64_vaddr_t s2b_cfg_rst_pc;
   logic load_s2b_cfg_rst_pc;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_cfg_rst_pc <= orv64_vaddr_t'(STATION_VP_S2B_CFG_RST_PC_RSTVAL);
@@ -1789,7 +1782,6 @@ module station_vp
   orv64_itb_sel_t rff_s2b_cfg_itb_sel;
   orv64_itb_sel_t s2b_cfg_itb_sel;
   logic load_s2b_cfg_itb_sel;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_cfg_itb_sel <= orv64_itb_sel_t'(STATION_VP_S2B_CFG_ITB_SEL_RSTVAL);
@@ -1801,13 +1793,11 @@ module station_vp
   orv64_itb_addr_t rff_b2s_itb_last_ptr;
   orv64_itb_addr_t b2s_itb_last_ptr;
   logic load_b2s_itb_last_ptr;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_b2s_itb_last_ptr <= orv64_itb_addr_t'(STATION_VP_B2S_ITB_LAST_PTR_RSTVAL);
     end else if (load_b2s_itb_last_ptr == 1'b1) begin
       rff_b2s_itb_last_ptr <= orv64_itb_addr_t'((wmask & b2s_itb_last_ptr) | (wmask_inv & rff_b2s_itb_last_ptr));
-
     end else if (vld_in_b2s_itb_last_ptr == 1'b1) begin
       rff_b2s_itb_last_ptr <= in_b2s_itb_last_ptr;
     end
@@ -1816,7 +1806,6 @@ module station_vp
   orv64_vaddr_t rff_s2b_bp_if_pc_0;
   orv64_vaddr_t s2b_bp_if_pc_0;
   logic load_s2b_bp_if_pc_0;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_bp_if_pc_0 <= orv64_vaddr_t'(STATION_VP_S2B_BP_IF_PC_0_RSTVAL);
@@ -1828,7 +1817,6 @@ module station_vp
   orv64_vaddr_t rff_s2b_bp_if_pc_1;
   orv64_vaddr_t s2b_bp_if_pc_1;
   logic load_s2b_bp_if_pc_1;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_bp_if_pc_1 <= orv64_vaddr_t'(STATION_VP_S2B_BP_IF_PC_1_RSTVAL);
@@ -1840,7 +1828,6 @@ module station_vp
   orv64_vaddr_t rff_s2b_bp_if_pc_2;
   orv64_vaddr_t s2b_bp_if_pc_2;
   logic load_s2b_bp_if_pc_2;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_bp_if_pc_2 <= orv64_vaddr_t'(STATION_VP_S2B_BP_IF_PC_2_RSTVAL);
@@ -1852,7 +1839,6 @@ module station_vp
   orv64_vaddr_t rff_s2b_bp_if_pc_3;
   orv64_vaddr_t s2b_bp_if_pc_3;
   logic load_s2b_bp_if_pc_3;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_bp_if_pc_3 <= orv64_vaddr_t'(STATION_VP_S2B_BP_IF_PC_3_RSTVAL);
@@ -1864,7 +1850,6 @@ module station_vp
   orv64_vaddr_t rff_s2b_bp_wb_pc_0;
   orv64_vaddr_t s2b_bp_wb_pc_0;
   logic load_s2b_bp_wb_pc_0;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_bp_wb_pc_0 <= orv64_vaddr_t'(STATION_VP_S2B_BP_WB_PC_0_RSTVAL);
@@ -1876,7 +1861,6 @@ module station_vp
   orv64_vaddr_t rff_s2b_bp_wb_pc_1;
   orv64_vaddr_t s2b_bp_wb_pc_1;
   logic load_s2b_bp_wb_pc_1;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_bp_wb_pc_1 <= orv64_vaddr_t'(STATION_VP_S2B_BP_WB_PC_1_RSTVAL);
@@ -1888,7 +1872,6 @@ module station_vp
   orv64_vaddr_t rff_s2b_bp_wb_pc_2;
   orv64_vaddr_t s2b_bp_wb_pc_2;
   logic load_s2b_bp_wb_pc_2;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_bp_wb_pc_2 <= orv64_vaddr_t'(STATION_VP_S2B_BP_WB_PC_2_RSTVAL);
@@ -1900,7 +1883,6 @@ module station_vp
   orv64_vaddr_t rff_s2b_bp_wb_pc_3;
   orv64_vaddr_t s2b_bp_wb_pc_3;
   logic load_s2b_bp_wb_pc_3;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_bp_wb_pc_3 <= orv64_vaddr_t'(STATION_VP_S2B_BP_WB_PC_3_RSTVAL);
@@ -1912,7 +1894,6 @@ module station_vp
   orv64_data_t rff_s2b_bp_instret;
   orv64_data_t s2b_bp_instret;
   logic load_s2b_bp_instret;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_bp_instret <= orv64_data_t'(STATION_VP_S2B_BP_INSTRET_RSTVAL);
@@ -1924,7 +1905,6 @@ module station_vp
   orv_vcore_icg_disable_t rff_s2b_vcore_icg_disable;
   orv_vcore_icg_disable_t s2b_vcore_icg_disable;
   logic load_s2b_vcore_icg_disable;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_vcore_icg_disable <= orv_vcore_icg_disable_t'(STATION_VP_S2B_VCORE_ICG_DISABLE_RSTVAL);
@@ -1936,7 +1916,6 @@ module station_vp
   vcore_pmu_evt_mask_t rff_s2b_vcore_pmu_evt_mask;
   vcore_pmu_evt_mask_t s2b_vcore_pmu_evt_mask;
   logic load_s2b_vcore_pmu_evt_mask;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_vcore_pmu_evt_mask <= vcore_pmu_evt_mask_t'(STATION_VP_S2B_VCORE_PMU_EVT_MASK_RSTVAL);
@@ -1948,7 +1927,6 @@ module station_vp
   powerline_ctrl_t rff_s2b_powerline_ctrl;
   powerline_ctrl_t s2b_powerline_ctrl;
   logic load_s2b_powerline_ctrl;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_powerline_ctrl <= powerline_ctrl_t'(STATION_VP_S2B_POWERLINE_CTRL_RSTVAL);
@@ -1960,7 +1938,6 @@ module station_vp
   logic [STATION_VP_S2B_CFG_LFSR_SEED_WIDTH - 1 : 0] rff_s2b_cfg_lfsr_seed;
   logic [STATION_VP_S2B_CFG_LFSR_SEED_WIDTH - 1 : 0] s2b_cfg_lfsr_seed;
   logic load_s2b_cfg_lfsr_seed;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_cfg_lfsr_seed <= STATION_VP_S2B_CFG_LFSR_SEED_RSTVAL;
@@ -1972,7 +1949,6 @@ module station_vp
   powervbank_ctrl_t rff_s2b_powervbank_ctrl;
   powervbank_ctrl_t s2b_powervbank_ctrl;
   logic load_s2b_powervbank_ctrl;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_powervbank_ctrl <= powervbank_ctrl_t'(STATION_VP_S2B_POWERVBANK_CTRL_RSTVAL);
@@ -1984,7 +1960,6 @@ module station_vp
   logic [STATION_VP_S2B_EARLY_RSTN_WIDTH - 1 : 0] rff_s2b_early_rstn;
   logic [STATION_VP_S2B_EARLY_RSTN_WIDTH - 1 : 0] s2b_early_rstn;
   logic load_s2b_early_rstn;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_early_rstn <= STATION_VP_S2B_EARLY_RSTN_RSTVAL;
@@ -1996,7 +1971,6 @@ module station_vp
   logic [STATION_VP_S2B_RSTN_WIDTH - 1 : 0] rff_s2b_rstn;
   logic [STATION_VP_S2B_RSTN_WIDTH - 1 : 0] s2b_rstn;
   logic load_s2b_rstn;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_rstn <= STATION_VP_S2B_RSTN_RSTVAL;
@@ -2008,18 +1982,15 @@ module station_vp
   logic [STATION_VP_S2B_EXT_EVENT_WIDTH - 1 : 0] rff_s2b_ext_event;
   logic [STATION_VP_S2B_EXT_EVENT_WIDTH - 1 : 0] s2b_ext_event;
   logic load_s2b_ext_event;
-
   logic dff_load_s2b_ext_event_d;
   always_ff @(posedge clk) begin
     dff_load_s2b_ext_event_d <= load_s2b_ext_event;
   end
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_ext_event <= STATION_VP_S2B_EXT_EVENT_RSTVAL;
     end else if (load_s2b_ext_event == 1'b1) begin
       rff_s2b_ext_event <= (wmask & s2b_ext_event) | (wmask_inv & rff_s2b_ext_event);
-
     end else if (dff_load_s2b_ext_event_d == 1'b1) begin
       rff_s2b_ext_event <= STATION_VP_S2B_EXT_EVENT_RSTVAL;
     end
@@ -2028,7 +1999,6 @@ module station_vp
   logic [STATION_VP_S2B_DEBUG_STALL_WIDTH - 1 : 0] rff_s2b_debug_stall;
   logic [STATION_VP_S2B_DEBUG_STALL_WIDTH - 1 : 0] s2b_debug_stall;
   logic load_s2b_debug_stall;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_debug_stall <= STATION_VP_S2B_DEBUG_STALL_RSTVAL;
@@ -2040,13 +2010,11 @@ module station_vp
   logic [STATION_VP_B2S_DEBUG_STALL_OUT_WIDTH - 1 : 0] rff_b2s_debug_stall_out;
   logic [STATION_VP_B2S_DEBUG_STALL_OUT_WIDTH - 1 : 0] b2s_debug_stall_out;
   logic load_b2s_debug_stall_out;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_b2s_debug_stall_out <= STATION_VP_B2S_DEBUG_STALL_OUT_RSTVAL;
     end else if (load_b2s_debug_stall_out == 1'b1) begin
       rff_b2s_debug_stall_out <= (wmask & b2s_debug_stall_out) | (wmask_inv & rff_b2s_debug_stall_out);
-
     end else if (vld_in_b2s_debug_stall_out == 1'b1) begin
       rff_b2s_debug_stall_out <= in_b2s_debug_stall_out;
     end
@@ -2055,18 +2023,15 @@ module station_vp
   logic [STATION_VP_S2B_DEBUG_RESUME_WIDTH - 1 : 0] rff_s2b_debug_resume;
   logic [STATION_VP_S2B_DEBUG_RESUME_WIDTH - 1 : 0] s2b_debug_resume;
   logic load_s2b_debug_resume;
-
   logic dff_load_s2b_debug_resume_d;
   always_ff @(posedge clk) begin
     dff_load_s2b_debug_resume_d <= load_s2b_debug_resume;
   end
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_debug_resume <= STATION_VP_S2B_DEBUG_RESUME_RSTVAL;
     end else if (load_s2b_debug_resume == 1'b1) begin
       rff_s2b_debug_resume <= (wmask & s2b_debug_resume) | (wmask_inv & rff_s2b_debug_resume);
-
     end else if (dff_load_s2b_debug_resume_d == 1'b1) begin
       rff_s2b_debug_resume <= STATION_VP_S2B_DEBUG_RESUME_RSTVAL;
     end
@@ -2075,13 +2040,11 @@ module station_vp
   logic [STATION_VP_B2S_VLOAD_DRT_REQ_VLEN_ILLEGAL_WIDTH - 1 : 0] rff_b2s_vload_drt_req_vlen_illegal;
   logic [STATION_VP_B2S_VLOAD_DRT_REQ_VLEN_ILLEGAL_WIDTH - 1 : 0] b2s_vload_drt_req_vlen_illegal;
   logic load_b2s_vload_drt_req_vlen_illegal;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_b2s_vload_drt_req_vlen_illegal <= STATION_VP_B2S_VLOAD_DRT_REQ_VLEN_ILLEGAL_RSTVAL;
     end else if (load_b2s_vload_drt_req_vlen_illegal == 1'b1) begin
       rff_b2s_vload_drt_req_vlen_illegal <= (wmask & b2s_vload_drt_req_vlen_illegal) | (wmask_inv & rff_b2s_vload_drt_req_vlen_illegal);
-
     end else if (vld_in_b2s_vload_drt_req_vlen_illegal == 1'b1) begin
       rff_b2s_vload_drt_req_vlen_illegal <= in_b2s_vload_drt_req_vlen_illegal;
     end
@@ -2090,7 +2053,6 @@ module station_vp
   logic [STATION_VP_S2B_CFG_EN_HPMCOUNTER_WIDTH - 1 : 0] rff_s2b_cfg_en_hpmcounter;
   logic [STATION_VP_S2B_CFG_EN_HPMCOUNTER_WIDTH - 1 : 0] s2b_cfg_en_hpmcounter;
   logic load_s2b_cfg_en_hpmcounter;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_cfg_en_hpmcounter <= STATION_VP_S2B_CFG_EN_HPMCOUNTER_RSTVAL;
@@ -2102,7 +2064,6 @@ module station_vp
   logic [STATION_VP_S2B_CFG_PWR_ON_WIDTH - 1 : 0] rff_s2b_cfg_pwr_on;
   logic [STATION_VP_S2B_CFG_PWR_ON_WIDTH - 1 : 0] s2b_cfg_pwr_on;
   logic load_s2b_cfg_pwr_on;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_cfg_pwr_on <= STATION_VP_S2B_CFG_PWR_ON_RSTVAL;
@@ -2114,7 +2075,6 @@ module station_vp
   logic [STATION_VP_S2B_CFG_SLEEP_WIDTH - 1 : 0] rff_s2b_cfg_sleep;
   logic [STATION_VP_S2B_CFG_SLEEP_WIDTH - 1 : 0] s2b_cfg_sleep;
   logic load_s2b_cfg_sleep;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_cfg_sleep <= STATION_VP_S2B_CFG_SLEEP_RSTVAL;
@@ -2126,7 +2086,6 @@ module station_vp
   logic [STATION_VP_S2B_CFG_BYPASS_IC_WIDTH - 1 : 0] rff_s2b_cfg_bypass_ic;
   logic [STATION_VP_S2B_CFG_BYPASS_IC_WIDTH - 1 : 0] s2b_cfg_bypass_ic;
   logic load_s2b_cfg_bypass_ic;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_cfg_bypass_ic <= STATION_VP_S2B_CFG_BYPASS_IC_RSTVAL;
@@ -2138,7 +2097,6 @@ module station_vp
   logic [STATION_VP_S2B_CFG_BYPASS_TLB_WIDTH - 1 : 0] rff_s2b_cfg_bypass_tlb;
   logic [STATION_VP_S2B_CFG_BYPASS_TLB_WIDTH - 1 : 0] s2b_cfg_bypass_tlb;
   logic load_s2b_cfg_bypass_tlb;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_cfg_bypass_tlb <= STATION_VP_S2B_CFG_BYPASS_TLB_RSTVAL;
@@ -2150,7 +2108,6 @@ module station_vp
   logic [STATION_VP_S2ICG_CLK_EN_WIDTH - 1 : 0] rff_s2icg_clk_en;
   logic [STATION_VP_S2ICG_CLK_EN_WIDTH - 1 : 0] s2icg_clk_en;
   logic load_s2icg_clk_en;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2icg_clk_en <= STATION_VP_S2ICG_CLK_EN_RSTVAL;
@@ -2162,13 +2119,11 @@ module station_vp
   logic [STATION_VP_B2S_IS_VTLB_EXCP_WIDTH - 1 : 0] rff_b2s_is_vtlb_excp;
   logic [STATION_VP_B2S_IS_VTLB_EXCP_WIDTH - 1 : 0] b2s_is_vtlb_excp;
   logic load_b2s_is_vtlb_excp;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_b2s_is_vtlb_excp <= STATION_VP_B2S_IS_VTLB_EXCP_RSTVAL;
     end else if (load_b2s_is_vtlb_excp == 1'b1) begin
       rff_b2s_is_vtlb_excp <= (wmask & b2s_is_vtlb_excp) | (wmask_inv & rff_b2s_is_vtlb_excp);
-
     end else if (vld_in_b2s_is_vtlb_excp == 1'b1) begin
       rff_b2s_is_vtlb_excp <= in_b2s_is_vtlb_excp;
     end
@@ -2177,7 +2132,6 @@ module station_vp
   logic [STATION_VP_S2B_CFG_ITB_EN_WIDTH - 1 : 0] rff_s2b_cfg_itb_en;
   logic [STATION_VP_S2B_CFG_ITB_EN_WIDTH - 1 : 0] s2b_cfg_itb_en;
   logic load_s2b_cfg_itb_en;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_cfg_itb_en <= STATION_VP_S2B_CFG_ITB_EN_RSTVAL;
@@ -2189,7 +2143,6 @@ module station_vp
   logic [STATION_VP_S2B_CFG_ITB_WRAP_AROUND_WIDTH - 1 : 0] rff_s2b_cfg_itb_wrap_around;
   logic [STATION_VP_S2B_CFG_ITB_WRAP_AROUND_WIDTH - 1 : 0] s2b_cfg_itb_wrap_around;
   logic load_s2b_cfg_itb_wrap_around;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_cfg_itb_wrap_around <= STATION_VP_S2B_CFG_ITB_WRAP_AROUND_RSTVAL;
@@ -2201,7 +2154,6 @@ module station_vp
   logic [STATION_VP_S2B_EN_BP_IF_PC_0_WIDTH - 1 : 0] rff_s2b_en_bp_if_pc_0;
   logic [STATION_VP_S2B_EN_BP_IF_PC_0_WIDTH - 1 : 0] s2b_en_bp_if_pc_0;
   logic load_s2b_en_bp_if_pc_0;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_en_bp_if_pc_0 <= STATION_VP_S2B_EN_BP_IF_PC_0_RSTVAL;
@@ -2213,7 +2165,6 @@ module station_vp
   logic [STATION_VP_S2B_EN_BP_IF_PC_1_WIDTH - 1 : 0] rff_s2b_en_bp_if_pc_1;
   logic [STATION_VP_S2B_EN_BP_IF_PC_1_WIDTH - 1 : 0] s2b_en_bp_if_pc_1;
   logic load_s2b_en_bp_if_pc_1;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_en_bp_if_pc_1 <= STATION_VP_S2B_EN_BP_IF_PC_1_RSTVAL;
@@ -2225,7 +2176,6 @@ module station_vp
   logic [STATION_VP_S2B_EN_BP_IF_PC_2_WIDTH - 1 : 0] rff_s2b_en_bp_if_pc_2;
   logic [STATION_VP_S2B_EN_BP_IF_PC_2_WIDTH - 1 : 0] s2b_en_bp_if_pc_2;
   logic load_s2b_en_bp_if_pc_2;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_en_bp_if_pc_2 <= STATION_VP_S2B_EN_BP_IF_PC_2_RSTVAL;
@@ -2237,7 +2187,6 @@ module station_vp
   logic [STATION_VP_S2B_EN_BP_IF_PC_3_WIDTH - 1 : 0] rff_s2b_en_bp_if_pc_3;
   logic [STATION_VP_S2B_EN_BP_IF_PC_3_WIDTH - 1 : 0] s2b_en_bp_if_pc_3;
   logic load_s2b_en_bp_if_pc_3;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_en_bp_if_pc_3 <= STATION_VP_S2B_EN_BP_IF_PC_3_RSTVAL;
@@ -2249,7 +2198,6 @@ module station_vp
   logic [STATION_VP_S2B_EN_BP_WB_PC_0_WIDTH - 1 : 0] rff_s2b_en_bp_wb_pc_0;
   logic [STATION_VP_S2B_EN_BP_WB_PC_0_WIDTH - 1 : 0] s2b_en_bp_wb_pc_0;
   logic load_s2b_en_bp_wb_pc_0;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_en_bp_wb_pc_0 <= STATION_VP_S2B_EN_BP_WB_PC_0_RSTVAL;
@@ -2261,7 +2209,6 @@ module station_vp
   logic [STATION_VP_S2B_EN_BP_WB_PC_1_WIDTH - 1 : 0] rff_s2b_en_bp_wb_pc_1;
   logic [STATION_VP_S2B_EN_BP_WB_PC_1_WIDTH - 1 : 0] s2b_en_bp_wb_pc_1;
   logic load_s2b_en_bp_wb_pc_1;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_en_bp_wb_pc_1 <= STATION_VP_S2B_EN_BP_WB_PC_1_RSTVAL;
@@ -2273,7 +2220,6 @@ module station_vp
   logic [STATION_VP_S2B_EN_BP_WB_PC_2_WIDTH - 1 : 0] rff_s2b_en_bp_wb_pc_2;
   logic [STATION_VP_S2B_EN_BP_WB_PC_2_WIDTH - 1 : 0] s2b_en_bp_wb_pc_2;
   logic load_s2b_en_bp_wb_pc_2;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_en_bp_wb_pc_2 <= STATION_VP_S2B_EN_BP_WB_PC_2_RSTVAL;
@@ -2285,7 +2231,6 @@ module station_vp
   logic [STATION_VP_S2B_EN_BP_WB_PC_3_WIDTH - 1 : 0] rff_s2b_en_bp_wb_pc_3;
   logic [STATION_VP_S2B_EN_BP_WB_PC_3_WIDTH - 1 : 0] s2b_en_bp_wb_pc_3;
   logic load_s2b_en_bp_wb_pc_3;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_en_bp_wb_pc_3 <= STATION_VP_S2B_EN_BP_WB_PC_3_RSTVAL;
@@ -2297,7 +2242,6 @@ module station_vp
   logic [STATION_VP_S2B_EN_BP_INSTRET_WIDTH - 1 : 0] rff_s2b_en_bp_instret;
   logic [STATION_VP_S2B_EN_BP_INSTRET_WIDTH - 1 : 0] s2b_en_bp_instret;
   logic load_s2b_en_bp_instret;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_en_bp_instret <= STATION_VP_S2B_EN_BP_INSTRET_RSTVAL;
@@ -2309,7 +2253,6 @@ module station_vp
   logic [STATION_VP_S2B_VCORE_EN_WIDTH - 1 : 0] rff_s2b_vcore_en;
   logic [STATION_VP_S2B_VCORE_EN_WIDTH - 1 : 0] s2b_vcore_en;
   logic load_s2b_vcore_en;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_vcore_en <= STATION_VP_S2B_VCORE_EN_RSTVAL;
@@ -2321,7 +2264,6 @@ module station_vp
   logic [STATION_VP_S2B_VCORE_PMU_EN_WIDTH - 1 : 0] rff_s2b_vcore_pmu_en;
   logic [STATION_VP_S2B_VCORE_PMU_EN_WIDTH - 1 : 0] s2b_vcore_pmu_en;
   logic load_s2b_vcore_pmu_en;
-
   always_ff @(posedge clk) begin
     if (rstn == 1'b0) begin
       rff_s2b_vcore_pmu_en <= STATION_VP_S2B_VCORE_PMU_EN_RSTVAL;
@@ -2330,13 +2272,11 @@ module station_vp
     end
   end
   assign out_s2b_vcore_pmu_en = rff_s2b_vcore_pmu_en;
-
   logic                         rdec;
   logic                         bdec;
   axi4_resp_t                   rresp;
   axi4_resp_t                   bresp;
   logic [STATION_VP_DATA_WIDTH - 1 : 0] data;
-
   always_comb begin
     rdec  = 1'b0;
     bdec  = 1'b0;
@@ -2431,7 +2371,6 @@ module station_vp
     load_s2b_vcore_en = 1'b0;
     s2b_vcore_pmu_en = rff_s2b_vcore_pmu_en;
     load_s2b_vcore_pmu_en = 1'b0;
-
     if (station2brb_req_arvalid) begin
       case (1'b1)
         ((station2brb_req_ar.araddr[STATION_VP_RING_ADDR_WIDTH-1 -: STATION_ID_WIDTH_0] == LOCAL_STATION_ID_0) && ({{(STATION_ID_WIDTH_0+$clog2(STATION_VP_DATA_WIDTH/8)){1'b0}}, station2brb_req_ar.araddr[STATION_VP_RING_ADDR_WIDTH-STATION_ID_WIDTH_0-1:$clog2(STATION_VP_DATA_WIDTH/8)]} == (STATION_VP_S2B_CFG_RST_PC_OFFSET >> $clog2(STATION_VP_DATA_WIDTH/8)))): begin
@@ -2948,7 +2887,6 @@ module station_vp
   logic                 o_resp_ppln_if_rready[1];
   logic                 o_resp_ppln_if_bvalid[1];
   logic                 o_resp_ppln_if_bready[1];
-
   logic                 rff_awrdy, rff_wrdy, next_awrdy, next_wrdy;
   // Request Bypassing
   assign o_req_local_if_awvalid  = (station2brb_req_awvalid & ~bdec) & ~rff_awrdy;
@@ -2984,40 +2922,29 @@ module station_vp
   end
   assign station2brb_req_awready  = rff_awrdy & rff_wrdy;
   assign station2brb_req_wready   = rff_awrdy & rff_wrdy;
-
   assign station2brb_req_arready  = (~rdec & o_req_local_if_arready) | (rdec & i_resp_if_rready[0]);
 
   // if 1, means input port i's destination station id matches output j's station id
   logic [1:0][0:0]      is_r_dst_match;
   logic [1:0][0:0]      is_b_dst_match;
-
   oursring_resp_if_b_t  brb_b;
   oursring_resp_if_r_t  brb_r;
-
   assign brb_b.bid   = station2brb_req_aw.awid;
   assign brb_b.bresp = bresp;
-
   assign brb_r.rid   = station2brb_req_ar.arid;
   assign brb_r.rresp = rresp;
   assign brb_r.rdata = data;
   assign brb_r.rlast = 1'b1;
-
   assign i_resp_if_b[0] = brb_b;
   assign i_resp_if_b[1] = i_resp_local_if_b;
-
   assign i_resp_if_r[0] = brb_r;
   assign i_resp_if_r[1] = i_resp_local_if_r;
-
   assign i_resp_if_rvalid[0] = station2brb_req_arvalid & rdec;
   assign i_resp_if_rvalid[1] = i_resp_local_if_rvalid;
-
   assign i_resp_local_if_rready = i_resp_if_rready[1];
-
   assign i_resp_if_bvalid[0] = station2brb_req_awvalid & station2brb_req_wvalid & bdec & ~rff_awrdy & ~rff_wrdy;
   assign i_resp_if_bvalid[1] = i_resp_local_if_bvalid;
-
   assign i_resp_local_if_bready = i_resp_if_bready[1];
-
   assign station2brb_rsp_b        = o_resp_ppln_if_b[0];
   assign station2brb_rsp_r        = o_resp_ppln_if_r[0];
   assign station2brb_rsp_rvalid   = o_resp_ppln_if_rvalid[0];
@@ -3027,7 +2954,6 @@ module station_vp
   
   assign is_r_dst_match = 2'b11;
   assign is_b_dst_match = 2'b11;
-
   oursring_resp #(.N_IN_PORT(2), .N_OUT_PORT(1)) resp_u (
     .i_resp_if_b            (i_resp_if_b),
     .i_resp_if_r            (i_resp_if_r),
@@ -3048,5 +2974,3 @@ module station_vp
     );
   
 endmodule
-`endif
-`endif

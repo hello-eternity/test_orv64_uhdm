@@ -14,9 +14,6 @@ module orv64_fetch
   output  orv64_excp_t        if2id_excp_ff,
   // IF -> Regfile
   output  orv64_if2irf_t      if2irf,
-  `ifdef ORV64_SUPPORT_FP
-  output  orv64_if2fprf_t     if2fprf,
-  `endif
   // IF -> L1I$
   output  orv64_if2ic_t       if2ic,
   input   orv64_ic2if_t       ic2if,
@@ -398,39 +395,9 @@ module orv64_fetch
 
   //------------------------------------------------------
   // if INST is integer or floating point: used as regfile reading enable
-  `ifdef ORV64_SUPPORT_FP
-  always_comb begin
-    // is_rs1_fp
-    case (opcode)
-      ORV64_FMADD, ORV64_FMSUB, ORV64_FNMADD, ORV64_FNMSUB: begin
-        if2id_ctrl.is_rs1_fp = 1'b1;
-      end
-      ORV64_OP_FP: begin
-        case (funct7)
-          7'h78, 7'h79, 7'h68, 7'h69: if2id_ctrl.is_rs1_fp = 1'b0;
-          default: if2id_ctrl.is_rs1_fp = 1'b1;
-        endcase
-      end
-      default: if2id_ctrl.is_rs1_fp = 1'b0;
-    endcase
-    // is_rs2_fp
-    case (opcode)
-      ORV64_STORE_FP, ORV64_FMADD, ORV64_FMSUB, ORV64_FNMADD, ORV64_FNMSUB: if2id_ctrl.is_rs2_fp = 1'b1;
-      ORV64_OP_FP:
-        case (funct7)
-          7'h20, 7'h21, 7'h2C, 7'h2D,
-          7'h60, 7'h61, 7'h68, 7'h69,
-          7'h70, 7'h71: if2id_ctrl.is_rs2_fp = 1'b0;
-          default: if2id_ctrl.is_rs2_fp = 1'b1;
-        endcase
-      default: if2id_ctrl.is_rs2_fp = 1'b0;
-    endcase
-  end
-  `else // ORV64_SUPPORT_FP
+ 
   assign if2id_ctrl.is_rs1_fp = 1'b0;
   assign if2id_ctrl.is_rs2_fp = 1'b0;
-  `endif // ORV64_SUPPORT_FP
-
   assign  if2id_ctrl.is_rs1_x0 = (rs1_addr == 'b0) & ~if2id_ctrl.is_rs1_fp;
   assign  if2id_ctrl.is_rs2_x0 = (rs2_addr == 'b0) & ~if2id_ctrl.is_rs2_fp;
 
@@ -451,25 +418,12 @@ module orv64_fetch
           endcase
         end
       end
-      `ifdef ORV64_SUPPORT_FP
-      ORV64_LOAD_FP, ORV64_STORE_FP, ORV64_OP_FP, ORV64_FMADD, ORV64_FMSUB, ORV64_FNMADD, ORV64_FNMSUB: if2id_ctrl.rs1_re = 1'b1;
-      `endif
       default: if2id_ctrl.rs1_re = 'b0;
     endcase
     // rs2_re?
     case (opcode)
       ORV64_AMO: if2id_ctrl.rs2_re = 1'b1;
       ORV64_OP, ORV64_BRANCH, ORV64_STORE, ORV64_OP_32: if2id_ctrl.rs2_re = 1'b1;
-      `ifdef ORV64_SUPPORT_FP
-      ORV64_STORE_FP, ORV64_FMADD, ORV64_FMSUB, ORV64_FNMADD, ORV64_FNMSUB: if2id_ctrl.rs2_re = 1'b1;
-      ORV64_OP_FP:
-        case (funct7)
-          7'h20, 7'h21, 7'h2C, 7'h2D,
-          7'h60, 7'h61, 7'h68, 7'h69,
-          7'h70, 7'h71, 7'h78, 7'h79: if2id_ctrl.rs2_re = 1'b0;
-          default: if2id_ctrl.rs2_re = 1'b1;
-        endcase
-      `endif
       ORV64_SYSTEM: begin
         if (funct7 == 7'h09) begin // sfence
           if2id_ctrl.rs2_re = 1'b1;
@@ -480,14 +434,9 @@ module orv64_fetch
       default: if2id_ctrl.rs2_re = 'b0;
     endcase
     // rs3_re?
-`ifdef ORV64_SUPPORT_FP
-    case (opcode)
-      ORV64_FMADD, ORV64_FMSUB, ORV64_FNMADD, ORV64_FNMSUB: if2id_ctrl.rs3_re = 1'b1;
-      default: if2id_ctrl.rs3_re = 1'b0;
-    endcase
-`else
+
     if2id_ctrl.rs3_re = 1'b0;
-`endif
+
   end
   //------------------------------------------------------
   // WFE
@@ -599,15 +548,6 @@ module orv64_fetch
   assign  rs1_is_fp = if2id_ctrl.is_rs1_fp & if2id_ctrl.rs1_re & ~if2id_ctrl.is_rs1_x0;
   assign  rs2_is_fp = if2id_ctrl.is_rs2_fp & if2id_ctrl.rs2_re & ~if2id_ctrl.is_rs2_x0;
   assign  fp_access_excp = (mstatus.FS == 2'b00) & (is_fp_instr) & if_valid;
-
-  `ifdef ORV64_SUPPORT_FP
-  assign  if2fprf.rs1_addr = rs1_addr;
-  assign  if2fprf.rs2_addr = rs2_addr;
-  assign  if2fprf.rs3_addr = rs3_addr;
-  assign  if2fprf.rs1_re = if2id_ctrl.is_rs1_fp & if2id_ctrl.rs1_re & if_valid & id_ready & ~fp_access_excp;
-  assign  if2fprf.rs2_re = if2id_ctrl.is_rs2_fp & if2id_ctrl.rs2_re & if_valid & id_ready & ~fp_access_excp;
-  assign  if2fprf.rs3_re = if2id_ctrl.rs3_re & if_valid & id_ready;
-  `endif // ORV64_SUPPORT_FP
   // }}}
 
   //==========================================================

@@ -18,7 +18,6 @@
 ../lib/ot_ip/arbiter/ot_rr_arbiter_with_hold_rstn.v
 ../lib/ot_ip/fifo/sd_flop_fifo_rstn.v
 ../lib/flop_sram.sv
-../lib/xilinx_sram.sv
 
 ../lib/flatten_array.sv
 
