@@ -12,19 +12,34 @@ module chip_idle_gen
     output logic                      chip_is_idle
     );
 
+  int i;
   always_comb begin
     chip_is_idle = 1'b1;
-    for (int i = 0; i < CPU_IDLE_N_CPU; i++) begin
-      if ((cpu_wfi[i] == 1'b0) & (cpu_wfe[i] == 1'b0) & (cpu_rstn[i] == 1'b1)) begin
-        chip_is_idle = 1'b0;
-        break;
-      end
+    // for (int i = 0; i < CPU_IDLE_N_CPU; i++) begin
+    //   if ((cpu_wfi[i] == 1'b0) & (cpu_wfe[i] == 1'b0) & (cpu_rstn[i] == 1'b1)) begin
+    //     chip_is_idle = 1'b0;
+    //     break;
+    //   end
+    // end
+    // for (int i = 0; i < CPU_IDLE_N_BANK; i++) begin
+    //   if ((bank_idle[i] == 1'b0) & (bank_rstn[i] == 1'b1)) begin
+    //     chip_is_idle = 1'b0;
+    //     break;
+    //   end
+    // end
+    i=0;
+    while (!((cpu_wfi[i] == 1'b0) & (cpu_wfe[i] == 1'b0) & (cpu_rstn[i] == 1'b1)) && i < CPU_IDLE_N_CPU) begin
+      i++;
     end
-    for (int i = 0; i < CPU_IDLE_N_BANK; i++) begin
-      if ((bank_idle[i] == 1'b0) & (bank_rstn[i] == 1'b1)) begin
-        chip_is_idle = 1'b0;
-        break;
-      end
+    if ((cpu_wfi[i] == 1'b0) & (cpu_wfe[i] == 1'b0) & (cpu_rstn[i] == 1'b1)) begin
+      chip_is_idle = 1'b0;
+    end
+    i=0;
+    while (!((bank_idle[i] == 1'b0) & (bank_rstn[i] == 1'b1)) && i < CPU_IDLE_N_BANK) begin
+      i++;
+    end
+    if ((bank_idle[i] == 1'b0) & (bank_rstn[i] == 1'b1)) begin
+      chip_is_idle = 1'b0;
     end
   end
 

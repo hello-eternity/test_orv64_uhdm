@@ -20,14 +20,21 @@ module orv64_napot_addr
   assign pmpaddr_addr = orv64_paddr_t'({pmpaddr.addr, 2'b11});
 
   assign is_no_zeros = &pmpaddr_addr;
-
+  int i ;
   always_comb begin
     ptr = '0;
-    for (int i=0; i<$bits(pmpaddr_addr); i++) begin
-      if (pmpaddr_addr[i] == 1'b0) begin
-        ptr = i;
-        break;
-      end
+    // for (int i=0; i<$bits(pmpaddr_addr); i++) begin
+    //   if (pmpaddr_addr[i] == 1'b0) begin
+    //     ptr = i;
+    //     break;
+    //   end
+    // end
+    i=0;
+    while (!(pmpaddr_addr[i] == 1'b0) && i<$bits(pmpaddr_addr)) begin
+      i++;
+    end
+    if (pmpaddr_addr[i] == 1'b0) begin
+      ptr = i;
     end
   end
 

@@ -31,7 +31,7 @@ module oursring_resp_arbiter
   // R support burst
   logic [N_IN_PORT-1:0] is_hold_r, rff_is_hold_r;
   logic busy_r;
-
+  int i;
   always_comb begin
     for (int i=0; i<N_IN_PORT; i++) begin
       i_rready[i] = '0;
@@ -40,19 +40,37 @@ module oursring_resp_arbiter
     is_hold_r = rff_is_hold_r;
     busy_r = |rff_is_hold_r;
     if (~busy_r) begin
-      for (int i=0; i<N_IN_PORT; i++) begin
-        if (i_rvalid[i]) begin
-          i_rready[i] = o_rready; //spyglass disable W415a
-          is_hold_r[i] = i_rready[i] & ~i_rlast[i]; //spyglass disable W415a
-          break;
-        end
+      // for (int i=0; i<N_IN_PORT; i++) begin
+      //   if (i_rvalid[i]) begin
+      //     i_rready[i] = o_rready; //spyglass disable W415a
+      //     is_hold_r[i] = i_rready[i] & ~i_rlast[i]; //spyglass disable W415a
+      //     break;
+      //   end
+      // end
+
+      i=0;
+      while (!(i_rvalid[i]) && i<N_IN_PORT) begin
+        i++;
+      end
+      if (i_rvalid[i]) begin
+        i_rready[i] = o_rready; //spyglass disable W415a
+        is_hold_r[i] = i_rready[i] & ~i_rlast[i]; //spyglass disable W415a
       end
     end else begin
-      for (int i=0; i<N_IN_PORT; i++) begin
-        if (i_rvalid[i] & rff_is_hold_r[i]) begin
-          i_rready[i] = o_rready; //spyglass disable W415a
-          is_hold_r[i] = i_rready[i] & ~i_rlast[i]; //spyglass disable W415a
-        end
+      // for (int i=0; i<N_IN_PORT; i++) begin
+      //   if (i_rvalid[i] & rff_is_hold_r[i]) begin
+      //     i_rready[i] = o_rready; //spyglass disable W415a
+      //     is_hold_r[i] = i_rready[i] & ~i_rlast[i]; //spyglass disable W415a
+      //   end
+      // end
+
+      i=0;
+      while (!(i_rvalid[i]) && i<N_IN_PORT) begin
+        i++;
+      end
+      if (i_rvalid[i]) begin
+        i_rready[i] = o_rready; //spyglass disable W415a
+        is_hold_r[i] = i_rready[i] & ~i_rlast[i]; //spyglass disable W415a
       end
     end
   end
@@ -65,12 +83,21 @@ module oursring_resp_arbiter
       i_bready[i] = '0;
     end
 
-    for (int i=0; i<N_IN_PORT; i++) begin
-      if (i_bvalid[i]) begin
-        i_bready[i] = o_bready; //spyglass disable W415a
-        break;
-      end
+    // for (int i=0; i<N_IN_PORT; i++) begin
+    //   if (i_bvalid[i]) begin
+    //     i_bready[i] = o_bready; //spyglass disable W415a
+    //     break;
+    //   end
+    // end
+    i=0;
+    while (!(i_bvalid[i]) && i<N_IN_PORT) begin
+      i++;
     end
+    if (i_bvalid[i]) begin
+      i_bready[i] = o_bready; //spyglass disable W415a
+    end
+
+    
   end
   // }}}
 

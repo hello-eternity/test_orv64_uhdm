@@ -36,7 +36,7 @@ module oursring_req_arbiter
   // W support burst
   logic [N_IN_PORT-1:0] is_hold_w, rff_is_hold_w;
   logic busy_w;
-
+  int i;
   always_comb begin
     for (int i=0; i<N_IN_PORT; i++) begin
       i_awready[i] = '0;
@@ -47,14 +47,23 @@ module oursring_req_arbiter
     busy_w = |rff_is_hold_w;
     if (~busy_w) begin
       // not busy, and Rx is ready, select a new one to grant
-      for (int i=0; i<N_IN_PORT; i++) begin
-        // wait for Tx side both AW and W are valid, and Rx side both AW and W are ready
-        if (i_awvalid[i] & i_wvalid[i]) begin
-          i_awready[i] = o_awready & o_wready; //spyglass disable W415a
-          i_wready[i]  = o_awready & o_wready; //spyglass disable W415a
-          is_hold_w[i] = i_wready[i] & ~i_wlast[i]; //spyglass disable W415a
-          break;
-        end
+      // for (int i=0; i<N_IN_PORT; i++) begin
+      //   // wait for Tx side both AW and W are valid, and Rx side both AW and W are ready
+      //   if (i_awvalid[i] & i_wvalid[i]) begin
+      //     i_awready[i] = o_awready & o_wready; //spyglass disable W415a
+      //     i_wready[i]  = o_awready & o_wready; //spyglass disable W415a
+      //     is_hold_w[i] = i_wready[i] & ~i_wlast[i]; //spyglass disable W415a
+      //     break;
+      //   end
+      // end
+      i=0;
+      while (!(i_awvalid[i] & i_wvalid[i]) && i<N_IN_PORT) begin
+        i++;
+      end
+      if (i_awvalid[i] & i_wvalid[i]) begin
+        i_awready[i] = o_awready & o_wready; //spyglass disable W415a
+        i_wready[i]  = o_awready & o_wready; //spyglass disable W415a
+        is_hold_w[i] = i_wready[i] & ~i_wlast[i]; //spyglass disable W415a
       end
     end else begin
       // busy, select the existing one to grant
@@ -75,11 +84,19 @@ module oursring_req_arbiter
       i_arready[i] = '0;
     end
 
-    for (int i=0; i<N_IN_PORT; i++) begin
-      if (i_arvalid[i]) begin
-        i_arready[i] = o_arready; //spyglass disable W415a
-        break;
-      end
+    // for (int i=0; i<N_IN_PORT; i++) begin
+    //   if (i_arvalid[i]) begin
+    //     i_arready[i] = o_arready; //spyglass disable W415a
+    //     break;
+    //   end
+    // end
+
+    i=0;
+    while (!(i_arvalid[i]) && i<N_IN_PORT) begin
+      i++;
+    end
+    if (i_arvalid[i]) begin
+      i_arready[i] = o_arready; //spyglass disable W415a
     end
   end
   // }}}

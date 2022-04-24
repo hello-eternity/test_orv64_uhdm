@@ -88,14 +88,21 @@ module orv64_pmp_checker
       assign is_csr_configured[i] = ~(pmpcfg[i].a == ORV64_OFF);
     end
   endgenerate
-
+  int i ;
   always_comb begin
     match_ptr = '0;
-    for (int i=0; i<ORV64_N_PMP_CSR; i++) begin
-      if (is_range_match[i]) begin
-        match_ptr = i;
-        break;
-      end
+    // for (int i=0; i<ORV64_N_PMP_CSR; i++) begin
+    //   if (is_range_match[i]) begin
+    //     match_ptr = i;
+    //     break;
+    //   end
+    // end
+    i=0;
+    while (!(is_range_match[i]) && i<ORV64_N_PMP_CSR) begin
+      i++;
+    end
+    if (is_range_match[i]) begin
+      match_ptr = i;
     end
   end
 

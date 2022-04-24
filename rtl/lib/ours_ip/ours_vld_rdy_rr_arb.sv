@@ -46,16 +46,23 @@ generate
         end
       end
     end
-
+    int i;
     // grt_with_priority
     always_comb begin
       grt_with_priority = {N_INPUT{1'b0}};
       if (|vld_with_priority) begin
-        for (int i = 0; i < N_INPUT; i++) begin
-          if (vld_with_priority[i] == 1'b1) begin
-            grt_with_priority[i] = 1'b1;
-            break;
-          end
+        // for (int i = 0; i < N_INPUT; i++) begin
+        //   if (vld_with_priority[i] == 1'b1) begin
+        //     grt_with_priority[i] = 1'b1;
+        //     break;
+        //   end
+        // end
+        i=0;
+        while (!(vld_with_priority[i] == 1'b1) &&  i < N_INPUT) begin
+          i++;
+        end
+        if (vld_with_priority[i] == 1'b1) begin
+          grt_with_priority[i] = 1'b1;
         end
       end
     end
@@ -78,11 +85,18 @@ generate
     always_comb begin
       grt_id = rff_last_grt_id + {{(N_INPUT_BITS-1){1'b0}}, 1'b1};
       if (|next_grt) begin
-        for (int i = 0; i < N_INPUT; i++) begin
-          if (next_grt[i] == 1'b1) begin
-            grt_id = N_INPUT_BITS'(i);
-            break;
-          end
+        // for (int i = 0; i < N_INPUT; i++) begin
+        //   if (next_grt[i] == 1'b1) begin
+        //     grt_id = N_INPUT_BITS'(i);
+        //     break;
+        //   end
+        // end
+        i=0;
+        while (!(next_grt[i] == 1'b1) &&  i < N_INPUT) begin
+          i++;
+        end
+        if (next_grt[i] == 1'b1) begin
+          grt_id = N_INPUT_BITS'(i);
         end
       end
     end

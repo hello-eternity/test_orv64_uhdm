@@ -17,12 +17,20 @@ package pygmy_func;
     lru_mask = '0;
     has_empty_way = '0;
 
-    for (int i=0; i<8; i++) begin
-      if (~way_valid[i] & way_enable[i]) begin
-        has_empty_way = '1;
-        replace_way_id = i;
-        break;
-      end
+    // for (int i=0; i<8; i++) begin
+    //   if (~way_valid[i] & way_enable[i]) begin
+    //     has_empty_way = '1;
+    //     replace_way_id = i;
+    //     break;
+    //   end
+    // end
+    i=0;
+    while (!(~way_valid[i] & way_enable[i]) && i<8) begin
+      i++;
+    end
+    if (~way_valid[i] & way_enable[i]) begin
+      has_empty_way = '1;
+      replace_way_id = i;
     end
 
     //------------------------------------------------------
@@ -134,12 +142,20 @@ package pygmy_func;
     logic has_empty_way;
     has_empty_way = '0;
 
-    for (int i=0; i<2; i++) begin
-      if (~way_valid[i] & way_enable[i]) begin
-        has_empty_way = '1;
-        replace_way_id = i;
-        break;
-      end
+    // for (int i=0; i<2; i++) begin
+    //   if (~way_valid[i] & way_enable[i]) begin
+    //     has_empty_way = '1;
+    //     replace_way_id = i;
+    //     break;
+    //   end
+    // end
+    i=0;
+    while (!(~way_valid[i] & way_enable[i]) && i<2) begin
+      i++;
+    end
+    if (~way_valid[i] & way_enable[i]) begin
+      has_empty_way = '1;
+      replace_way_id = i;
     end
 
     if (~has_empty_way) begin
