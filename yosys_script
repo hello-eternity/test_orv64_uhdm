@@ -1,6 +1,6 @@
 plugin -i uhdm
-read_uhdm -debug orv64.uhdm
-prep -top \orv64
+read_uhdm -debug orv64_ptw_core.uhdm
+prep -top \orv64_ptw_core
 write_verilog
 write_verilog yosys.sv
 sim -clock a -rstlen 10 -vcd dump.vcd
